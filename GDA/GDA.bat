@@ -2,6 +2,28 @@
 cls
 
 REM #######################################################
+REM Author and Stuff
+REM #######################################################
+REM Script Name: Get Domain Admins (GDA)
+REM Author: Scott Sutherland (nullbind) <scott.sutherland@netspi.com>
+REM Publish Date: 12/4/2011
+
+REM #######################################################
+REM Shout Outz!
+REM #######################################################
+REM Thank you Mark Beard (pacmandu) <pacmandu@gmail.com> and humble-desser
+REM for your updating the script to accept five part domain names.
+
+REM #######################################################
+REM Script Summary
+REM #######################################################
+REM The primary goal of this script is to locate systems 
+REM running processes with a Domain Admin account so that penetesters
+REM can conduct cleaner privilege escalation in Active Directory domains.  
+REM This way pentesters dont have to spray shells all over the place with
+REM metasploit+psexec+meterpreter and scrape for admin tokens. :)
+
+REM #######################################################
 REM Check  Variables 
 REM #######################################################
 REM - Target Domain

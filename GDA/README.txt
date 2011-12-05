@@ -83,7 +83,7 @@ Instructions - Identify Systems with active Domain Admin sessions - Target Defau
 ------------------------------------------------------------------
 1. Open a Windows command console and navigate to the GDA directory. 
 
-2. Type gda -a to location domain admin session for the current user's domain. 
+2. Type gda -a to location domain admin sessions for the current user's domain. 
 
 3. Collect the list of domain controllers, domain admins, and systems with domain admin sessions from datargets.txt.
 
@@ -92,7 +92,7 @@ Instructions - Identify Systems with active Domain Admin sessions - Target NON D
 ------------------------------------------------------------------
 1. Open a Windows command console and navigate to the GDA directory. 
 
-2. Type gda -c subdomain.domain.com to location domain admin session for a domain other than the one the current
+2. Type gda -c subdomain.domain.com to location domain admin sessions for a domain other than the one the current
    usre belongs to.
 
 3. Collect the list of domain controllers, domain admins, and systems with domain admin sessions from datargets.txt.
