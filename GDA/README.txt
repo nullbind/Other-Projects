@@ -1,12 +1,64 @@
 ----------------------------
-Script Name: GDA
-Author: Scott Sutherland (nullbind) <scott.sutherland@nullbind.com>
-Date: 12/1/2011
+Script Name: Get Domain Admins (GDA)
+Author: Scott Sutherland (nullbind) <scott.sutherland@netspi.com>
+Date: 12/4/2011
 
 ----------------------------
-Description
+Shout Outz!
 ----------------------------
-This script can be used to enumerate users that exist in the current machine's domain and locate systems running processes with a domain admin account by querying domain controllers.  I know its craptacular, but it works.  One note though, make sure to modify the script manually when enumerating accounts and sessions for domains with three part names.  For example: subdomain.domain.com.
+Thank you Mark Beard (pacmandu) <pacmandu@gmail.com> and humble-desser.
+They took the time to mod this script so that it can use 
+up to a five part domain name, and were also nice enough to test the 
+script out on: 
+- Windows XP
+- Windows 7
+- Win2003 server 
+
+I would also like to thank Joe Richard of joeware.net.  He has 
+created a fantastic ADS toolset.  Without him this script 
+wouldn't exist.
+
+----------------------------
+Script Summary
+----------------------------
+The primary goal of this script is to locate systems 
+running processes with a Domain Admin account so that penetesters
+can conduct cleaner privilege escalation in Active Directory domains.  
+This way pentesters dont have to spray shells all over the place with
+metasploit+psexec+meterpreter and scrape for admin tokens. :)
+
+Fewer sprayed shells = Less risk of service disruptions = Happy client/boss
+				   and
+			Higher likelyhood of 
+			escalating to Domain Admin
+			quickly
+
+----------------------------
+How it Works
+----------------------------
+1. Gather a list of Domain Controllers from the ADS "Domain Controllers" OU 
+   using LDAP and a trusted connection. - (adfind.exe)
+   
+2. Gather a list of Domain Admins from the ADS "Domain Admins" group using 
+   LDAP and a trusted connection. - (adfind.exe)
+   
+3. Gather a list of all of the active sessions being tracked on 
+   each of the domain controllers using netsessionenum API. - (netsess.exe)
+   
+   The following information will be returned:
+   - IP address
+   - Username 
+   - Session start time
+   - Session idle time
+   
+4. Cross reference the Domain Admin list with the active session list to determine which IP addresses
+   have active domain tokens on them.
+   
+5. Take the natural next steps. 
+
+Note: My hope is that Mubix and Jabra will create some fun Metasploit modules that take advantage of 
+      this approach using Railgun and Jabra's current escalation module, but I still need to followup
+      with them....to be continued...
 
 ----------------------------
 Instructions - Installation 
@@ -24,8 +76,10 @@ Source - http://sourceforge.net/projects/unxutils/
 - gawk.exe  
 - uniq.exe
 
+2. Run desired command.
+
 ------------------------------------------------------------------
-Instructions - Identify Systems with active Domain Admin sessions
+Instructions - Identify Systems with active Domain Admin sessions - Target Default Domain
 ------------------------------------------------------------------
 1. Open a Windows command console and navigate to the GDA directory. 
 
@@ -33,6 +87,17 @@ Instructions - Identify Systems with active Domain Admin sessions
 
 3. Collect the list of domain controllers, domain admins, and systems with domain admin sessions from datargets.txt.
 
+------------------------------------------------------------------
+Instructions - Identify Systems with active Domain Admin sessions - Target NON Default Domain
+------------------------------------------------------------------
+1. Open a Windows command console and navigate to the GDA directory. 
+
+2. Type gda -c subdomain.domain.com to location domain admin session for a domain other than the one the current
+   usre belongs to.
+
+3. Collect the list of domain controllers, domain admins, and systems with domain admin sessions from datargets.txt.
+
+Note: Right now this usually only works when looking up info from domains with trust relationships to the default domain.
 
 ------------------------------------------------------------------
 Instructions - Enumerate domain users for the current domain

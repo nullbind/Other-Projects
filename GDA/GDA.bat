@@ -4,12 +4,39 @@ cls
 REM #######################################################
 REM Check  Variables 
 REM #######################################################
-echo %userdnsdomain% | gawk -F "." "{print $1}">1
-echo %userdnsdomain% | gawk -F "." "{print $2}">2
-SET /p var1= < 1
-SET /p var2= < 2
-DEL 1
-DEL 2
+REM - Target Domain
+IF EXIST target del target
+echo %userdnsdomain% | gawk -F "." "{print $0}" > target
+SET /p target_domain= < target
+DEL target
+
+
+REM - Checking total number of words in a given domain name and save on totalvar 
+IF EXIST num_words del num_words
+echo %userdnsdomain% | gawk  -F "." "{ total = total + NF }; END { print total+0 }" > num_words
+SET /p totalvar= < num_words
+DEL num_words
+
+REM - Define all variables to be used later (e.g: var1=hacking, var2=lab, var3=local)
+IF EXIST domainname del domainname
+FOR /L %%G IN (1,1,%totalvar%) DO (echo %userdnsdomain% | gawk -F "." "{print $%%G}" > %%G
+SET /p var%%G= < %%G
+gawk "BEGIN { while (a++<1) s=s \"dc=%%var%%G%%\"; print s }" >> domainname
+DEL %%G )
+
+REM - Parsing the domain variables to be insert into domain_parameters (e.g: dc=%var1%,dc=%var2%,dc=%var3%)
+IF EXIST domainname_var del domainname_var
+gawk "NR==1{x=$0;next}NF{x=x\",\"$0}END{print x}" domainname > domainname_var
+DEL domainname
+
+REM - Fix parsing issues
+IF EXIST domainname_var2 del domainname_var2
+SET /p temp_var= < domainname_var
+@echo %temp_var% | sed "s/'//" > domainname_var2
+SET /p domain_parameter= < domainname_var2
+DEL domainname_var 
+DEL domainname_var2
+ 
 
 if [%1] equ [] goto :SYNTAX
 if [%1] equ [-h] goto :SYNTAX
@@ -31,7 +58,7 @@ echo processes as a domain admin
 echo ------------------------------------------------------------
 echo Syntax: 
 echo -l Dump list of users from current domain using LDAP
-echo -c Get list of DA sessions - custom domain (gda -c acme com)
+echo -c Get list of DA sessions - custom domain
 echo -a Get list of DA sessions - local machine's domain
 echo ------------------------------------------------------------
 REM #######################################################
@@ -60,7 +87,7 @@ goto :end
 
 :DUMPUSERSLDAP
 IF EXIST users_ldap.txt del users_ldap.txt
-@adfind -b dc=%var1%,dc=%var2% -f "objectcategory=user" -gc | grep -i "sAMAccountName:" | gawk -F ":" "{print $2}" | gawk -F " " "{print $1}"| sort > users_ldap.txt
+@adfind -b %domain_parameter% -f "objectcategory=user" -gc | grep -i "sAMAccountName:" | gawk -F ":" "{print $2}" | gawk -F " " "{print $1}"| sort > users_ldap.txt
 users_ldap.txt
 goto :END
 
@@ -69,7 +96,7 @@ IF EXIST datargets.txt del datargets.txt
 REM ####################################################### 
 REM GET LIST OF DOMAIN CONTROLLERS WITH ADFIND
 REM ####################################################### 
-@adfind -b -sc dcdmp dc=%2,dc=%3 -gc | grep -i ">name:" | gawk -F " " "{print $2}" | sort | uniq >> dcs.txt 2>&1
+@adfind -b -sc dcdmp %domain_parameter% -gc | grep -i ">name:" | gawk -F " " "{print $2}" | sort | uniq >> dcs.txt 2>&1
 echo -----------------------------------------------
 echo Getting list of Domain Controllers...
 echo -----------------------------------------------
@@ -80,7 +107,7 @@ REM #######################################################
 echo -----------------------------------------------
 echo Getting list of Domain Admins...
 echo -----------------------------------------------
-@adfind -b dc=%2,dc=%3 -f name="Domain Admins" -gc > myadmins1.txt
+@adfind -b %domain_parameter% -f name="Domain Admins" -gc > myadmins1.txt
 grep -i "member:" myadmins1.txt > myadmins2.txt
 sed -e s/^>member:" "CN=/'/g myadmins2.txt > myadmins3.txt
 sed -e s/,/',/g myadmins3.txt > myadmins4.txt
@@ -89,7 +116,7 @@ sed s/'//g myadmins5.txt > dcadmintmp.txt
 del myadmins*.txt
 
 REM PARSE LIST OF DOMAIN ADMINS
-FOR /f "tokens=1 delims=" %%a IN ('cat dcadmintmp.txt') do @adfind -b dc=%2,dc=%3 -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >> dcadmins.txt
+FOR /f "tokens=1 delims=" %%a IN ('cat dcadmintmp.txt') do @adfind -b %domain_parameter% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >> dcadmins.txt
 del dcadmintmp.txt
 
 REM ####################################################### 
@@ -106,7 +133,7 @@ for /f %%a in ('type dcadmins.txt') do grep -i %%a mysessions.txt >> mysessions2
 echo =============================>>datargets.txt
 echo TARGET DOMAIN                >>datargets.txt
 echo ----------------------------->>datargets.txt
-echo %2.%3                        >>datargets.txt
+echo %userdnsdomain%              >>datargets.txt
 echo _                            >>datargets.txt
 goto :report
 
@@ -121,7 +148,7 @@ gawk -F "\\" "{print $3}" pdc1.txt > pdc.txt
 SET /P PDC= < pdc.txt
 del pdc1.txt
 del pdc.txt
-@adfind -b -sc dcdmp dc=%var1%,dc=%var2% -f name=%PDC% -gc | grep -i ">name:" | gawk -F " " "{print $2}" | sort | uniq >> dcs.txt 2>&1
+@adfind -b -sc dcdmp %domain_parameter% -f name=%PDC% -gc | grep -i ">name:" | gawk -F " " "{print $2}" | sort | uniq >> dcs.txt 2>&1
 echo -----------------------------------------------
 echo Getting list of Domain Controllers...
 echo -----------------------------------------------
@@ -132,7 +159,7 @@ REM #######################################################
 echo -----------------------------------------------
 echo Getting list of Domain Admins...
 echo -----------------------------------------------
-@adfind -b dc=%var1%,dc=%var2% -f name="Domain Admins" -gc > myadmins1.txt
+@adfind -b %domain_parameter% -f name="Domain Admins" -gc > myadmins1.txt
 grep -i "member:" myadmins1.txt > myadmins2.txt
 sed -e s/^>member:" "CN=/'/g myadmins2.txt > myadmins3.txt
 sed -e s/,/',/g myadmins3.txt > myadmins4.txt
@@ -141,7 +168,7 @@ sed s/'//g myadmins5.txt > dcadmintmp.txt
 REM del myadmins*.txt
 
 REM PARSE LIST OF DOMAIN ADMINS
-FOR /f "tokens=1 delims=" %%a IN ('cat dcadmintmp.txt') do @adfind -b dc=%var1%,dc=%var2% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >>dcadmins.txt
+FOR /f "tokens=1 delims=" %%a IN ('cat dcadmintmp.txt') do @adfind -b %domain_parameter% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >>dcadmins.txt
 del dcadmintmp.txt
 
 REM ####################################################### 
