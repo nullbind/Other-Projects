@@ -8,7 +8,7 @@ Shout Outz!
 ----------------------------
 Thank you Mark Beard (pacmandu) <pacmandu@gmail.com> and humble-desser.
 They took the time to mod this script so that it can use 
-up to a five part domain name, and were also nice enough to test the 
+up to a multipart domain names, and were also nice enough to test the 
 script out on: 
 - Windows XP
 - Windows 7
