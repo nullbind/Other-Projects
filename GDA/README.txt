@@ -1,20 +1,21 @@
 ----------------------------
 Script Name: Get Domain Admins (GDA)
 Author: Scott Sutherland (nullbind) <scott.sutherland@netspi.com>
-Date: 12/4/2011
+Date: 12/5/2011
 
 ----------------------------
 Shout Outz!
 ----------------------------
-Thank you Mark Beard (pacmandu) <pacmandu@gmail.com> and humble-desser.
-They took the time to mod this script so that it can use 
-up to a multipart domain names, and were also nice enough to test the 
-script out on: 
+Thank you Mark Beard (pacmandu) <pacmandu@gmail.com> and humble-desser for
+taking the time to mod this script so that it can use 
+multipart domain names.  Also, thank you for testing it out on the 
+following compatable flavors of Windows: 
 - Windows XP
 - Windows 7
 - Win2003 server 
+- Win2008 server
 
-I would also like to thank Joe Richard of joeware.net.  He has 
+Finally, I would also like to thank Joe Richards of joeware.net.  He has 
 created a fantastic ADS toolset.  Without him this script 
 wouldn't exist.
 
