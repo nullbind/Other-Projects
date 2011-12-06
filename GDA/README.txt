@@ -53,9 +53,9 @@ How it Works
    - Session idle time
    
 4. Cross reference the Domain Admin list with the active session list to determine which IP addresses
-   have active domain tokens on them.
+   have processes being run as a Domain Admin.
    
-5. Take the natural next steps. 
+5. Take the natural next steps. (metasploit+psexec+meterpreter)
 
 Note: My hope is that Mubix and Jabra will create some fun Metasploit modules that take advantage of 
       this approach using Railgun and Jabra's current escalation module, but I still need to followup
