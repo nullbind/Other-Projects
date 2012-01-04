@@ -1,0 +1,225 @@
+Basic dictionary attacks against ADS
+Author: scott sutherland <scott.sutherland@netspi.com>
+
+Dictionary Attacks Against Active Directory
+STEPS:
+0 - Find Domains
+1 - FIND DOMAIN CONTROLLERS 
+2 - ENUMNERATE USERS
+3 - CREATE A DICTIONARY
+4 - PERFORM DICTIONARY ATTACK
+
+ESCALATE WITH DOMAIN USER ACCOUNT
+
+5 - LOGON ONTO SYSTEM
+6 - ESCALATE TO DOMAIN ADMIN
+
+
+
+------------------------------------------
+FIND DOMAINS
+------------------------------------------
+
+#1 IPCONFIG
+1. Review domain associate with DHCP.
+
+#2 NMAP
+1. Run RDNS scan: NMAP -sL <host or IP Range> -oA client_rnds
+2. grep -i -v "()" client_rdns.gnmap | grep -i -v "nmap" | gawk -F "(" "{print $2}" | gawk -F ")" "{print $1}" | sed s/^\./:/1 | gawk -F ":" "{print $2}" | sort | uniq
+3. script will show uniq domains
+
+#3 Reverseraider on Backtrack - same general idea as option 2
+1. Run ./reverseraider -r 192.168.1.100-110
+
+#4 Wireshark
+1. Sniff packets and import in to Network Minor to parse systems and domains.
+
+#5 RDP
+1. Remote desktop to a domain controller and review domains drop down.
+
+#6 NLTEST  (gets trusted domains)
+1. NLTEST /DOMAIN_TRUSTS <server> 
+
+#7 NLTEST (gets partent domain for current system)
+1. NLTEST /parentdomain 
+
+#8 DNSWALK - (get dubdomains via domain transfer)
+./dnswalk netspi.com.
+
+------------------------------------------
+FIND DOMAIN CONTROLLERS
+------------------------------------------
+I'm sure there are more ways to find domain
+controllers, but I've listed 5 below:
+
+
+#1 DNS LOOKUP
+command : nslookup
+syntax  : nslookup -type=SRV _ldap._tcp.<domain>
+native  : All Windows flavors (to my knowledge)
+comments: Does not require user to be on domain, although ldap doesnt guraentee ads, it is the case in 90% of instances.
+
+#2 NLTEST
+command : nltest
+native  : Only in Windows 7/2k8 and later
+syntax  : nltest /dclist: <domain>
+comments: Does not require user to be on domain
+
+#3 LDAP QUERY
+command: adfind
+syntax : adfind -b -sc dcdmp <domain> -gc | grep -i ">name:" | gawk -F " " "{print $2}" | sort | uniq
+native : no - joeware tool
+comment: Typically requires the user to be on a domain system, but can sometimes be done with an anonymous connection.
+
+#4 NET GROUP
+command: net group
+syntax : net group "Domain Controllers" /domain
+native : All Windows flavors (to my knowledge)
+comment: Typically requires the user to be on a domain system, but could be done with just a domain user.
+
+#5 FINDPDC etc
+
+------------------------------------------
+ENUMERATE USERS
+------------------------------------------
+Dictionary attacks are much more affective when you
+actually know the user accounts.  Here are a few ways
+to get a list from ADS.  The options below  don't all work everytime, but
+usually at least one does. Also on a side note, you can get
+a null smb login with the follow native Windows command: net use \\<ip>\IPC$ "" /user:""
+It comes in handy quite a bit.
+
+#1 RPC CALLS
+tools  : 
+	 Note: You may need to try all of these, because they seem to use differant RPC calls.          	 
+	 gda -s (only if already on the host will give parsed list)
+	 nmap --script smb-enum-users.nse <server>
+	 superscan - GUI
+	 null session + dumpacl
+	 getacct - security friday
+syntax : enum -U <server>
+native : no
+comment: All of these tools can be used with null smb logins. I like dumpacl the most (when it works) 
+	 because it has a lot of greate filtering
+         and export options. For more info on the differant RPC methods used by the tools goto:
+	 http://nmap.org/nsedoc/scripts/smb-enum-users.html 
+
+#2 SNMP
+command: metasploit - url
+	 snmpwalk - url
+         mibbrowser - url
+syntax : all have intuitive syntax
+native : no
+comment: Use public/private strings to connect and dump usernames.  This also work on LInux
+         systems quite often.  Fuzzdb has a nice short list to try along with company specific 
+         keywords. 
+          
+
+#3 LDAP
+tools  : adfind
+         ldap minor
+	 ldap explorer
+         softera ldap administrator
+	 gda -l (if already on host -will give parsed list)
+syntax : adfind -b dc=<domain>,dc=<com> -f "objectcategory=user" -gc | grep -i "sAMAccountName:" | gawk -F ":" "{print $2}" | gawk -F " " "{print $1}"| sort 
+native : no
+comment: Sometimes this can be done via an anonymous connection, but usually requires credentials.
+
+#4 Sharepoint
+tools: burp
+native: short of
+comment: This may or may not require authentication. 
+         Sharepoint supports a user information form.  Very often all domain users can be enumerated
+         by incrementing the id number.  I like to use burp to fuzz the id and grab the usernames.
+         If the sharepoint site is accessible it can be a valid option.
+         The form is pretty ez to find, but I'll add it to this list later.
+
+#5 WMI
+
+#6 NET USERs /domain
+tools: net users, or net users /domain
+native: yes
+comment: This usually needs to be run on system that is on the domain.
+
+------------------------------------------
+5 BASIC DICTIONARY WORDS THAT ALWAYS WORK
+------------------------------------------
+The small dictionary below always gets me in everytime.  Also, don't forget
+to respect the password policy! Below are guides for creating 5 small password list files.
+
+#1 - SEASONAL COMBINATIONS
+template: <season><year>
+examples: Fall2011, Winter2011, Spring2011, Summer2011
+Comments: This turns up hundreds of user accounts in larger environments
+
+#2 - USERNAME AS PASSWORD
+template: <username/loginname>
+examples: username
+Comments: This usually turns up a couple dozen accounts which are typically used to run services. 
+
+#3 - THE TARGET COMPANIES NAME
+template: <Companyname>, <Companyname>1, <Companyname>1
+examples: Acme, Acme1, Acme12
+comments: This usually turns up a couple dozen accounts which are often user and vendor accounts.
+          Also, I encourge capitalizing the first charater - its helps meet basic password complexity 
+	  requirements :). 
+
+#4 - THE CLASSIC PASSWORD
+template: <Password><number>
+examples: Password, Password1, Password12, and P@ssword
+comments: Sounds dump, but this still works. Also, I encourge 
+	  capitalizing the first charater - its helps meet basic password complexity requirements :). 
+
+#5 - BLANK/NULL
+template: blank/null
+example :
+comments: This turns out less these days, but usually there is at least a few configured with no password.
+
+Bruter instructions:
+WARNING: Only test a max of 3 passwords at a time  unless no account lockout policy is in place.  Load list of users  enumerated earlier into bruter.  Set "max retry" to 1 and set "max attempt" to 1.  Load  3 password word list into a file.  Start.  Below are the password that should be attempted:
+
+------------------------------------------
+TOOLS FOR CONDUCTING DICTIONARY ATTACK
+------------------------------------------
+Everyone has their preferances.  Here are mine.
+
+#1 MEDUSA 
+tool    : MEDUSA - http://www.foofus.net/~jmk/medusa/medusa.html
+syntax  : medusa -H hosts.txt -U users.txt -P passwords.txt -T 20 -t 10 -L -F -M smbnt
+comments: Works, and is a little faster than bruter - it also support using 
+          hashes instead of a traditional pw list which is pretty kule.
+
+#2 BRUTER
+tool    : BRUTER- http://sourceforge.net/projects/worawita/
+syntax  : Easy to use GUI
+comments: Say what you will this tool consistently works, but its a little slow.  
+
+#3 HYDRA
+tool    : HYDRA- http://thc.org/thc-hydra/
+syntax  : hydra.exe -L users.txt -P passwords.txt -o credentials.txt <ip> ssh
+comments: This can be a little buggy, but sometimes its works.
+
+#4 
+tool    : net use - native Windows command
+syntax  : FOR /F "tokens=*" %a in ('type passwords.txt') do net user \\<ip>\IPC$ /user:<user> %a
+comments: Its very slow, but it does work in a pinch.
+
+------------------------------------------
+LOGON ONTO SYSTEM
+------------------------------------------
+In order, I typically attempt worksations, win2k, win2k3, win2k8 server because of the way 
+policies are usually applied to the systems.
+
+#1 RDP or RDP + sethc.exe
+#2 meterpreter + psexec
+#3 mount c dump system/sam and pth with psexec
+
+------------------------------------------
+ESCALATE TO DOMAIN ADMIN
+------------------------------------------
+You can use GDA to find active domain admin sessions.
+
+#1 - incognito
+#2 - pth + incognito
+
+

@@ -99,6 +99,7 @@ if [%1] equ [-h] goto :SYNTAX
 if [%1] equ [-c] goto :CUSTOM
 if [%1] equ [-a] goto :CURRENT
 if [%1] equ [-l] goto :DUMPUSERSLDAP
+if [%1] equ [-s] goto :DUMPUSERSSMB
 
 
 goto :end
@@ -114,6 +115,7 @@ echo processes as a domain admin
 echo ------------------------------------------------------------
 echo Syntax: 
 echo -l Dump list of users from current domain using LDAP
+echo -s dumps list of users from current domain using SMB (enum)
 echo -c Get list of DA sessions - custom domain
 echo -a Get list of DA sessions - local machine's domain
 echo ------------------------------------------------------------
@@ -143,11 +145,28 @@ goto :end
 
 :DUMPUSERSLDAP
 IF EXIST users_ldap.txt del users_ldap.txt
+echo HERE:%domain_parameter%
 @adfind -b %domain_parameter% -f "objectcategory=user" -gc | grep -i "sAMAccountName:" | gawk -F ":" "{print $2}" | gawk -F " " "{print $1}"| sort > users_ldap.txt
 echo .
 echo .
 echo Results have been exported to users_ldap.txt
 goto :END
+
+:DUMPUSERSSMB
+findpdc %userdomain% 1 >> pdc1.txt
+gawk -F "\\" "{print $3}" pdc1.txt > pdc.txt
+SET /P PDC= < pdc.txt
+del pdc1.txt
+del pdc.txt
+enum.exe -N  %PDC% | grep -v "getting" | grep -v "up..." | grep -v "\$" | grep -v "server:" | gawk -F " " "{print $1}" >> users_smb1.txt
+enum.exe -N  %PDC% | grep -v "getting" | grep -v "up..." | grep -v "\$" | grep -v "server:" | gawk -F " " "{print $2}" >> users_smb1.txt
+enum.exe -N  %PDC% | grep -v "getting" | grep -v "up..." | grep -v "\$" | grep -v "server:" | gawk -F " " "{print $3}" >> users_smb1.txt
+enum.exe -N  %PDC% | grep -v "getting" | grep -v "up..." | grep -v "\$" | grep -v "server:" | gawk -F " " "{print $4}" >> users_smb1.txt
+cat users_smb1.txt | grep -v "^$" | uniq | sort > users_smb.txt
+del users_smb1.txt
+users_smb.txt
+
+goto :end
 
 :CUSTOM
 IF EXIST datargets.txt del datargets.txt
@@ -169,12 +188,12 @@ echo -----------------------------------------------
 grep -i "member:" myadmins1.txt > myadmins2.txt
 sed -e s/^>member:" "CN=/'/g myadmins2.txt > myadmins3.txt
 sed -e s/,/',/g myadmins3.txt > myadmins4.txt
-cat myadmins4.txt | gawk -F "," "{print $1}" > myadmins5.txt
+type myadmins4.txt | gawk -F "," "{print $1}" > myadmins5.txt
 sed s/'//g myadmins5.txt > dcadmintmp.txt
 REM DEL myadmins*.txt
 
 REM PARSE LIST OF DOMAIN ADMINS
-FOR /f "tokens=1 delims=" %%a IN ('cat dcadmintmp.txt') do @adfind -b %c_domain_parameter% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >> dcadmins.txt
+FOR /f "tokens=1 delims=" %%a IN ('type dcadmintmp.txt') do @adfind -b %c_domain_parameter% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >> dcadmins.txt
 DEL dcadmintmp.txt
 
 REM ####################################################### 
@@ -221,12 +240,12 @@ echo -----------------------------------------------
 grep -i "member:" myadmins1.txt > myadmins2.txt
 sed -e s/^>member:" "CN=/'/g myadmins2.txt > myadmins3.txt
 sed -e s/,/',/g myadmins3.txt > myadmins4.txt
-cat myadmins4.txt | gawk -F "," "{print $1}" > myadmins5.txt
+type myadmins4.txt | gawk -F "," "{print $1}" > myadmins5.txt
 sed s/'//g myadmins5.txt > dcadmintmp.txt
 REM del myadmins*.txt
 
 REM PARSE LIST OF DOMAIN ADMINS
-FOR /f "tokens=1 delims=" %%a IN ('cat dcadmintmp.txt') do @adfind -b %domain_parameter% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >>dcadmins.txt
+FOR /f "tokens=1 delims=" %%a IN ('type dcadmintmp.txt') do @adfind -b %domain_parameter% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >>dcadmins.txt
 DEL dcadmintmp.txt
 
 REM ####################################################### 

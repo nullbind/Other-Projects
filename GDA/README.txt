@@ -57,9 +57,15 @@ How it Works
    
 5. Take the natural next steps. (metasploit+psexec+meterpreter)
 
-Note: My hope is that Mubix and Jabra will create some fun Metasploit modules that take advantage of 
+Note: In environments where there are very few domain admins, and they are using seperate accounts
+      you may have to run it a few times until you catch them in an active sesions, but in larger
+      environments you can almost always catch a service account doing in daily tasks.
+      My hope is that Mubix and Jabra will create some fun Metasploit modules that take advantage of 
       this approach using Railgun and Jabra's current escalation module, but I still need to followup
       with them....to be continued...
+
+      
+              
 
 ----------------------------
 Instructions - Installation 
