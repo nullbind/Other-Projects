@@ -647,7 +647,7 @@ wc -l list_pending.txt | sed s/list_pending.txt//g | sed -e "s/^[ \]*//" > line_
 SET /P line_count=<line_count
 
 REM IF LIST_PENDING.TXT IS NOT EMPTY TRY NEXT GROUP OF PASSWORDS
-IF %line_count% GEQ 1 SET GOTO :RUN
+IF %line_count% GEQ 1 GOTO :RUN
 IF %line_count% EQU 0 ECHO  [*]  ACTION: Dictionary attack completed.
 
 REM ## CLEAN UP TEMP FILES
