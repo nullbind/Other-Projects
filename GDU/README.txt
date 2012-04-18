@@ -3,6 +3,7 @@
 #################################################################
  Script Name: Get Domain Users (GDU)
  Author: Scott Sutherland(nullbind)<scott.sutherland@netspi.com>
+ Version: 1.0
 
  Description:
  This script is intended to automate Windows domain user 
@@ -75,7 +76,9 @@
  
  4) Modify the dumpsec, enum, and metasploit paths in GDU.bat.
  
- 5) Execute the script.
+ 5) Modify/add passwords to script.
+ 
+ 6) Execute script.
 
 ################################################################
 # GET DOMIAIN USERS (GDU) - Usage
@@ -104,9 +107,16 @@
     gdu -t -c domain.com
     gdu -a -u "domain\user" -p password -c domain.com
 
-
-
-
+################################################################
+# GET DOMIAIN USERS (GDU) - Usage
+################################################################
+  
+ 1) Add option to list active domain group memeber sessions
+ 2) Add option to list active domain user sessions
+ 3) Add custom dictionary option
+ 4) Add fast/comprehensive modes - fast=stop enumeration on first success
+ 5) Add check for required executables before running
+  
 
 
 

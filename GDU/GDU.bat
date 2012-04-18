@@ -6,6 +6,7 @@ REM # Author and Stuff
 REM #################################################################
 REM # Script Name: Get Domain Users (GDU)
 REM # Author: Scott Sutherland (nullbind) <scott.sutherland@netspi.com>
+REM # Version: 1.0
 REM #
 REM # Description:
 REM # This script is intended to automate Windows domain user 
@@ -531,51 +532,50 @@ IF EXIST list_pending.txt DEL list_pending.txt
 touch list_pending.txt
 ECHO companyname>> list_pending.txt
 ECHO Companyname>> list_pending.txt
-ECHO !!getitdone!!>> list_pending.txt
 ECHO Summer2012>> list_pending.txt
 ECHO Fall2011>> list_pending.txt
 ECHO Winter2011>> list_pending.txt
 ECHO Winter2012>> list_pending.txt
-REM ECHO Spring2012>> list_pending.txt
-REM ECHO Companyname1>> list_pending.txt
-REM ECHO companyname1>> list_pending.txt
-REM EcHO Companyname12>> list_pending.txt
-REM EcHO companyname12>> list_pending.txt
-REM ECHO Password>> list_pending.txt
-REM ECHO password>> list_pending.txt
-REM ECHO Password1>> list_pending.txt
-REM ECHO password1>> list_pending.txt
-REM ECHO P@ssw0rd1>> list_pending.txt
-REM ECHO Password12>> list_pending.txt
-REM ECHO password123>> list_pending.txt
-REM ECHO Password123>> list_pending.txt
-REM ECHO 12345>> list_pending.txt
-REM ECHO 123456>> list_pending.txt
-REM ECHO 654321>> list_pending.txt
-REM ECHO 1234567>> list_pending.txt
-REM ECHO 12345678>> list_pending.txt
-REM ECHO 123456789>> list_pending.txt
-REM ECHO 1234asdf>> list_pending.txt
-REM ECHO qwerty>> list_pending.txt
-REM ECHO Qwerty>> list_pending.txt
-REM ECHO abc123>> list_pending.txt
-REM ECHO letmein>> list_pending.txt
-REM ECHO opensesme>> list_pending.txt
-REM ECHO monkey>> list_pending.txt
-REM ECHO Monkey>> list_pending.txt
-REM ECHO myspace1>> list_pending.txt
-REM ECHO link182>> list_pending.txt
-REM ECHO liverpool>> list_pending.txt
-REM ECHO iloveyou>> list_pending.txt
-REM ECHO rockyou>> list_pending.txt
-REM ECHO princess>> list_pending.txt
-REM ECHO thomas>> list_pending.txt
-REM ECHO Nicole>> list_pending.txt
-REM ECHO Daniel>> list_pending.txt
-REM ECHO babygirl>> list_pending.txt
-REM ECHO michael>> list_pending.txt
-REM ECHO Ashley>> list_pending.txt
-REM ECHO yuiop>> list_pending.txt
+ECHO Spring2012>> list_pending.txt
+ECHO Companyname1>> list_pending.txt
+ECHO companyname1>> list_pending.txt
+EcHO Companyname12>> list_pending.txt
+EcHO companyname12>> list_pending.txt
+ECHO Password>> list_pending.txt
+ECHO password>> list_pending.txt
+ECHO Password1>> list_pending.txt
+ECHO password1>> list_pending.txt
+ECHO P@ssw0rd1>> list_pending.txt
+ECHO Password12>> list_pending.txt
+ECHO password123>> list_pending.txt
+ECHO Password123>> list_pending.txt
+ECHO 12345>> list_pending.txt
+ECHO 123456>> list_pending.txt
+ECHO 654321>> list_pending.txt
+ECHO 1234567>> list_pending.txt
+ECHO 12345678>> list_pending.txt
+ECHO 123456789>> list_pending.txt
+ECHO 1234asdf>> list_pending.txt
+ECHO qwerty>> list_pending.txt
+ECHO Qwerty>> list_pending.txt
+ECHO abc123>> list_pending.txt
+ECHO letmein>> list_pending.txt
+ECHO opensesme>> list_pending.txt
+ECHO monkey>> list_pending.txt
+ECHO Monkey>> list_pending.txt
+ECHO myspace1>> list_pending.txt
+ECHO link182>> list_pending.txt
+ECHO liverpool>> list_pending.txt
+ECHO iloveyou>> list_pending.txt
+ECHO rockyou>> list_pending.txt
+ECHO princess>> list_pending.txt
+ECHO thomas>> list_pending.txt
+ECHO Nicole>> list_pending.txt
+ECHO Daniel>> list_pending.txt
+ECHO babygirl>> list_pending.txt
+ECHO michael>> list_pending.txt
+ECHO Ashley>> list_pending.txt
+ECHO yuiop>> list_pending.txt
  
 REM ## Get number of passwords to be used
 wc -l  list_pending.txt | sed -e "s/^[ \]*//" | sed s/list_pending.txt//g> pwcount
