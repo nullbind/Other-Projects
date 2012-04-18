@@ -81,7 +81,7 @@ IF [%1] equ [-t] goto :TRUSTEDCON
 :SYNTAX
 ECHO.
 ECHO  ====================================================================================
-ECHO           GET DOMAIN USERS (GDU) - Author: scott.sutherland@netspi.com (nullbind)
+ECHO       GET DOMAIN USERS (GDU) v.1.0 - Author: scott.sutherland@netspi.com (nullbind)
 ECHO.
 ECHO               https://github.com/nullbind/Other-Projects/tree/master/GDU
 ECHO  ====================================================================================
