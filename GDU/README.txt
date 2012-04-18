@@ -108,7 +108,7 @@
     gdu -a -u "domain\user" -p password -c domain.com
 
 ################################################################
-# GET DOMIAIN USERS (GDU) - Usage
+# GET DOMIAIN USERS (GDU) - Todo
 ################################################################
   
  1) Add option to list active domain group memeber sessions
