@@ -1,5 +1,5 @@
 #################################################################
-# GET DOMIAIN USERS (GDAU) - Overview
+# GET DOMIAIN USERS (GDU) - Overview
 #################################################################
  Script Name: Get Domain Users (GDU)
  Author: Scott Sutherland(nullbind)<scott.sutherland@netspi.com>
@@ -37,7 +37,7 @@
     attack will be aborted
 
 #################################################################
-# GET DOMIAIN USERS (GDAU) - Installation
+# GET DOMIAIN USERS (GDU) - Installation
 #################################################################
  
  1) Download GDU.bat
@@ -78,7 +78,7 @@
  5) Execute the script.
 
 ################################################################
-# GET DOMIAIN USERS (GDAU) - Usage
+# GET DOMIAIN USERS (GDU) - Usage
 ################################################################
 
    Syntax: gdu [options]
