@@ -81,6 +81,8 @@ IF [%1] equ [-t] goto :TRUSTEDCON
 ECHO.
 ECHO  ====================================================================================
 ECHO           GET DOMAIN USERS (GDU) - Author: scott.sutherland@netspi.com (nullbind)
+ECHO.
+ECHO               https://github.com/nullbind/Other-Projects/tree/master/GDU
 ECHO  ====================================================================================
 ECHO.
 ECHO   This script is intended to automate Windows domain user enumeration using multiple 
