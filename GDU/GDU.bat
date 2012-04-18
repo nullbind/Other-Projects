@@ -44,12 +44,11 @@ REM #################################################################
 REM -----------------------------------------------------------------
 REM TODO
 REM -----------------------------------------------------------------
-REM - add gda option that supports auth
-REM - dumpsec - on first success stop and move on
-REM - enum - on first success stop and move on
-REM - add express option (stops after first successfull enumeration)
+REM - Add option to list active domain group memeber sessions
+REM - Add option to list active domain user sessions
+REM - Add custom dictionary option
+REM - Add fast/comprehensive modes
 REM - Add check for required executables before running
-REM - add null base/bind to ldap to run when null smb login session runs
 REM -----------------------------------------------------------------
 
 REM -------------------------------------------------------
