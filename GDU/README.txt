@@ -91,8 +91,9 @@
     -n Authenticate with a null SMB login
     -t Authenticate with a trusted connection (current user)
     -a Authenticate with a supplied credentials
-    -u user name to authenticate with
-    -p password to authenticate with
+    -u User name to authenticate with
+    -p Password to authenticate with
+	-g Domain group name for finding active member sessions
     -c custom domain
 
    Examples (basic):
@@ -100,22 +101,24 @@
     gdu -n 							
     gdu -t
     gdu -a -u "domain\user" -p password
+	gdu -g "group name" -u "domain\user" -p password 
 
    Examples (custom domain):
 
     gdu -n -c domain.com							
     gdu -t -c domain.com
     gdu -a -u "domain\user" -p password -c domain.com
+	gdu -g "group name" -u "domain\user" -p password -c domain.com
 
 ################################################################
 # GET DOMIAIN USERS (GDU) - Todo
 ################################################################
   
- 1) Add option to list active domain group memeber sessions
- 2) Add option to list active domain user sessions
- 3) Add custom dictionary option
- 4) Add fast/comprehensive modes - fast=stop enumeration on first success
- 5) Add check for required executables before running
+ 1) Add fast/comprehensive modes - fast=stop user enumeration on first success
+ 2) Add custom dictionary option
+ 3) Add check for required executables before running
+ 4) Add some more error checking 
+ 5) Write the script in a lanugage that doesn't suck :)
   
 
 

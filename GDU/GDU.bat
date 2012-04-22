@@ -101,7 +101,7 @@ ECHO    -t Authenticate with a trusted connection (current user)
 ECHO    -a Authenticate with a supplied credentials
 ECHO    -u User name to authenticate with
 ECHO    -p Password to authenticate with
-ECHO    -g List active sessions for members of domain group
+ECHO    -g Domain group name for finding active member sessions
 ECHO    -c Custom domain
 ECHO.
 ECHO   Examples (basic):
