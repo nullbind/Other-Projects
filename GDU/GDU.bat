@@ -6,7 +6,7 @@ REM # Author and Stuff
 REM #################################################################
 REM # Script Name: Get Domain Users (GDU)
 REM # Author: Scott Sutherland (nullbind) <scott.sutherland@netspi.com>
-REM # Version: 1.0
+REM # Version: 1.1
 REM #
 REM # Description:
 REM # This script is intended to automate Windows domain user 
@@ -69,19 +69,20 @@ REM ## SETUP CUSTOM DOMAIN (NOT ASSOCIATED WITH DHCP)
 REM ## Example: SET custom_domain=company.local
 IF [%2] equ [-c] SET custom_domain=%3
 IF [%6] equ [-c] SET custom_domain=%7
+IF [%7] equ [-c] SET custom_domain=%8
+
 
 REM ## SETUP COMMAND LINE SWITCHES
 IF [%1] equ [] goto :SYNTAX
-IF [%1] equ [-g] goto :GETGROUPSESS
+IF [%1] equ [-g] goto :AUTHENTICATE
 IF [%1] equ [-n] goto :NULLSESSION
 IF [%1] equ [-a] goto :AUTHENTICATE
 IF [%1] equ [-t] goto :TRUSTEDCON
 
-
 :SYNTAX
 ECHO.
 ECHO  ====================================================================================
-ECHO       GET DOMAIN USERS (GDU) v.1.0 - Author: scott.sutherland@netspi.com (nullbind)
+ECHO       GET DOMAIN USERS (GDU) v.1.1 - Author: scott.sutherland@netspi.com (nullbind)
 ECHO.
 ECHO               https://github.com/nullbind/Other-Projects/tree/master/GDU
 ECHO  ====================================================================================
@@ -98,28 +99,34 @@ ECHO.
 ECHO    -n Authenticate with a null SMB login
 ECHO    -t Authenticate with a trusted connection (current user)
 ECHO    -a Authenticate with a supplied credentials
-ECHO    -u user name to authenticate with
-ECHO    -p password to authenticate with
-ECHO    -c custom domain
+ECHO    -u User name to authenticate with
+ECHO    -p Password to authenticate with
+ECHO    -g List active sessions for members of domain group
+ECHO    -c Custom domain
 ECHO.
 ECHO   Examples (basic):
 ECHO. 
 ECHO    gdu -n 							
 ECHO    gdu -t
 ECHO    gdu -a -u "domain\user" -p password
+ECHO    gdu -g "group name" -u "domain\user" -p password 
 ECHO.
 ECHO   Examples (custom domain):
 ECHO.
 ECHO    gdu -n -c domain.com							
 ECHO    gdu -t -c domain.com
-ECHO    gdu -a -u "domain\user" -p password -c domain.com
+ECHO    gdu -a -u "domain\myuser" -p mypassword -c domain.com
+ECHO    gdu -g "group name" -u "domain\user" -p password -c domain.com
 ECHO.
 GOTO :END
 
 :AUTHENTICATE
-IF [%5] equ [] ECHO Missing username or password && goto :END
+IF [%5] equ [] ECHO  Missing username or password && goto :END
 SET enumauth=-u %3 -p %5
 SET netuse_auth=/user:%3 %5
+IF [%1] equ [-g] SET enumauth=-u %4 -p %6
+IF [%1] equ [-g] SET netuse_auth=/user:%4 %6
+IF [%1] equ [-g] SET attack=N && GOTO :DHCP
 GOTO :NULLSESSION
 
 :TRUSTEDCON
@@ -138,8 +145,11 @@ SET attack=N && GOTO :DHCP
 :DHCP
 REM ## DISPLAY BANNER
 cls
+ECHO.
 ECHO  ====================================================================================
-ECHO           GET DOMAIN USERS (GDU) - Author: scott.sutherland@netspi.com (nullbind)
+ECHO       GET DOMAIN USERS (GDU) v.1.1 - Author: scott.sutherland@netspi.com (nullbind)
+ECHO.
+ECHO               https://github.com/nullbind/Other-Projects/tree/master/GDU
 ECHO  ====================================================================================
 ECHO                               Enumerating Domain Users                 
 ECHO  ------------------------------------------------------------------------------------
@@ -148,6 +158,7 @@ REM GET CURRENT DOMAIN FROM IPCONFIG DHCP CONFIGURATION
 REM -------------------------------------------------------
 IF [%1] equ [-n] ECHO  [*]    INFO: Authentication method = NULLSESSION
 IF [%1] equ [-a] ECHO  [*]    INFO: Authentication method = AUTHENTICATED USER
+IF [%1] equ [-g] ECHO  [*]    INFO: Authentication method = AUTHENTICATED USER
 IF [%1] equ [-t] ECHO  [*]    INFO: Authentication method = TRUSTED CONNECTION
 IF %attack% equ N ECHO  [*]    INFO: Dictionary attack DISABLED
 IF %attack% equ Y ECHO  [*]    INFO: Dictionary attack ENABLED
@@ -227,7 +238,60 @@ REM -------------------------------------------------------
 REM ## Establish smb login to each domain controller via native net use command
 IF [%1] equ [-n] ECHO  [*]  ACTION: Establishing null SMB login to each DC...
 IF [%1] equ [-a] ECHO  [*]  ACTION: Establishing authenticated login to each DC as %3...
+IF [%1] equ [-g] ECHO  [*]  ACTION: Establishing authenticated login to each DC as %4...
+
 FOR /F "tokens=*" %%i in ('type dcs.txt') do net use \\%%i\IPC$ %netuse_auth% 1>nul
+
+IF [%1] equ [-g] GOTO :GETGROUPSESS
+GOTO :LDAP
+
+
+:GETGROUPSESS
+REM ## CHECK FOR REQUIRED VARIABLES
+IF [%2] equ [] ECHO MISSING GROUP NAME
+IF [%4] equ [] ECHO MISSING USERNAME FOR AUTHENTICATION
+IF [%6] equ [] ECHO M
+
+REM -------------------------------------------------------
+REM GET ACTIVE SESSIONS OF DOMAIN GROUP MEMBERS
+REM -------------------------------------------------------
+
+REM ## GET MEMBER NAMES FOR THE GROUP
+ECHO  [*]  ACTION: Sending LDAP query for list of %2 group members...
+@AdFind.exe -b %domain_parameter%  -f name=%2 member -list | gawk -F "CN=" "{print $2}" | sed s/,//g 2>nul 1>group_tmp.txt
+
+REM ## GET LOGIN FOR EACH USER
+REM ECHO  [*]  ACTION: Parsing group member names...
+FOR /f "tokens=1 delims=" %%a IN ('type group_tmp.txt') do @adfind -b %domain_parameter% -f name="%%a" | grep -i "sAMAccountName" | sed -e s/^>sAMAccountName:" "//g >> group_members.txt
+	
+REM ## GET ACTIVE SESSIONS FOR GROUP MEMBERS
+ECHO  [*]  ACTION: Querying domain controllers for active sessions...
+for /f "tokens=*" %%a in ('type dcs.txt') do NetSess.exe %%a >> sessions_tmp.txt 
+
+REM ## SEARCH SESSIONS FOR ACTIVE GROUP MEMBER SESSIONS
+ECHO  [*]  ACTION: Searching sessions for group members...
+for /f "tokens=*" %%a in ('type group_members.txt') do grep -i %%a sessions_tmp.txt >> group_sess_tmp.txt
+sort group_sess_tmp.txt | uniq > group_sess_final.txt
+
+REM ## GET COUNT OF ACTIVE SESSIONS
+wc -l group_sess_final.txt | sed s/group_sess_final.txt//g | sed -e "s/^[ \]*//" > sess_count.txt
+SET /P sess_count=<sess_count.txt
+if %sess_count% LEQ 0 ECHO  [-]  RESULT: No active sessions found.
+
+REM ## DISPLAY NUMBER OF ACTIVE GROUP SESSIONS
+ECHO  [*]  RESULT: %sess_count%session(s) were found!
+
+REM ## DISPLAY LIST OF ACTIVE GROUP MEMBER SESSIONS
+for /f "tokens=*" %%a in ('type group_sess_final.txt') do ECHO  [*] SESSION: %%a
+
+REM ## CLEAN UP FILES
+IF EXIST group_tmp.txt DEL group_tmp.txt
+IF EXIST group_members.txt DEL group_members.txt
+IF EXIST sessions_tmp.txt  DEL sessions_tmp.txt 
+IF EXIST group_sess_tmp.txt DEL group_sess_tmp.txt
+IF EXIST sess_count.txt DEL sess_count.txt
+
+GOTO :END
 
 
 :LDAP
