@@ -33,9 +33,9 @@
 
  Notes:
  1) If no lockout policy exists, the dictionary attack will be 
-    aborted so it can be manually confirmed
+    aborted so it can be manually confirmed.
  2)If the lockout policy cannot be determined the dicitonary
-    attack will be aborted
+    attack will be aborted.
 
 #################################################################
 # GET DOMIAIN USERS (GDU) - Installation
@@ -93,7 +93,7 @@
     -a Authenticate with a supplied credentials
     -u User name to authenticate with
     -p Password to authenticate with
-	-g Domain group name for finding active member sessions
+    -g Domain group name for finding active member sessions
     -c custom domain
 
    Examples (basic):
@@ -101,14 +101,14 @@
     gdu -n 							
     gdu -t
     gdu -a -u "domain\user" -p password
-	gdu -g "group name" -u "domain\user" -p password 
+    gdu -g "group name" -u "domain\user" -p password 
 
    Examples (custom domain):
 
 	gdu -n -c domain.com							
     gdu -t -c domain.com
 	gdu -a -u "domain\user" -p password -c domain.com
-	gdu -g "group name" -u "domain\user" -p password -c domain.com
+    gdu -g "group name" -u "domain\user" -p password -c domain.com
 
 ################################################################
 # GET DOMIAIN USERS (GDU) - Todo
