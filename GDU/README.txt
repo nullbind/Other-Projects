@@ -105,20 +105,20 @@
 
    Examples (custom domain):
 
-	gdu -n -c domain.com							
+    gdu -n -c domain.com							
     gdu -t -c domain.com
-	gdu -a -u "domain\user" -p password -c domain.com
+    gdu -a -u "domain\user" -p password -c domain.com
     gdu -g "group name" -u "domain\user" -p password -c domain.com
 
 ################################################################
 # GET DOMIAIN USERS (GDU) - Todo
 ################################################################
   
- 1) Add fast/comprehensive modes - fast=stop user enumeration on first success
- 2) Add custom dictionary option
- 3) Add check for required executables before running
- 4) Add some more error checking 
- 5) Write the script in a lanugage that doesn't suck :)
+ 1) Add fast/comprehensive modes - fast=stop user enumeration on first success.
+ 2) Add custom dictionary option.
+ 3) Add check for required executables before running.
+ 4) Add some more error checking.
+ 5) Write the script in a real programming lanugage . - Maybe ruby...  :)
   
 
 
