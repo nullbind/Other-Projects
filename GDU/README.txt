@@ -3,7 +3,7 @@
 #################################################################
  Script Name: Get Domain Users (GDU)
  Author: Scott Sutherland(nullbind)<scott.sutherland@netspi.com>
- Version: 1.0
+ Version: 1.1
 
  Description:
  This script is intended to automate Windows domain user 
@@ -105,9 +105,9 @@
 
    Examples (custom domain):
 
-    gdu -n -c domain.com							
+	gdu -n -c domain.com							
     gdu -t -c domain.com
-    gdu -a -u "domain\user" -p password -c domain.com
+	gdu -a -u "domain\user" -p password -c domain.com
 	gdu -g "group name" -u "domain\user" -p password -c domain.com
 
 ################################################################
