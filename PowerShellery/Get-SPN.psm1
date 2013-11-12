@@ -89,25 +89,38 @@ function Get-SpnBySpn{
     $objSearcher = New-Object System.DirectoryServices.DirectorySearcher
     $objSearcher.Filter = "(ServicePrincipalName=$Search)"
     "name","samaccountname","ServicePrincipalName" | Foreach-Object {$null = $objSearcher.PropertiesToLoad.Add($_) }
-    Write-Host " "
-    Write-Host "----------------------"
-    $objSearcher.FindAll() | foreach {
+    
+	# Check if there are any matches for the search
+	$records = $objSearcher.FindAll()
+	$record_count = $records.count
+	if ($record_count -gt 0){
+		
+		# Dispaly account and service principal information
+		Write-Host " "  
+		Write-Host "----------------------"
+		$objSearcher.FindAll() | foreach {
+		
+			$MyName = $_.properties['name']
+			$MyAccount = $_.properties['samaccountname']
+			$MySPN = $_.properties['ServicePrincipalName'] 
+			$MySPNCount = $MySPN.Count
 
-        $c = $_.properties['name']
-        $x = $_.properties['samaccountname']
-        $y = $_.properties['ServicePrincipalName'] 
-        $z = $y.Count
-
-        Write-Output "Name: $c"
-        Write-Output "Account: $x"
-        Write-Output "SPN Count: $z"
-            if ($z -gt 0)
-            {
-                Write-Output "Service Principal Names:"
-                $Y
-            }
-        Write-Host "----------------------"
-    }
+			Write-Output "Name: $MyName"
+			Write-Output "Account: $MyAccount"
+			Write-Output "SPN Count: $MySPNCount"
+				if ($MySPNCount -gt 0)
+				{
+					Write-Output "Service Principal Names:"
+					$MySPN
+				}
+			Write-Host "----------------------"
+		}
+	}
+	
+	# Display records found
+	Write-Host " " 
+	Write-Host "Found $record_count accounts that matched your search."
+	Write-Host " " 
 }
 
 
@@ -168,25 +181,38 @@ function Get-SpnByUser{
     $objSearcher = New-Object System.DirectoryServices.DirectorySearcher
     $objSearcher.Filter = "(samaccountname=$Search)"
     "name","samaccountname","ServicePrincipalName" | Foreach-Object {$null = $objSearcher.PropertiesToLoad.Add($_) }
-    Write-Host " "
-    Write-Host "----------------------"
-    $objSearcher.FindAll() | foreach {
+	
+	# Check if there are any matches for the search
+	$records = $objSearcher.FindAll()
+	$record_count = $records.count
+	if ($record_count -gt 0){
+		
+		# Dispaly account and service principal information
+		Write-Host " "  
+		Write-Host "----------------------"
+		$objSearcher.FindAll() | foreach {
+		
+			$MyName = $_.properties['name']
+			$MyAccount = $_.properties['samaccountname']
+			$MySPN = $_.properties['ServicePrincipalName'] 
+			$MySPNCount = $MySPN.Count
 
-        $c = $_.properties['name']
-        $x = $_.properties['samaccountname']
-        $y = $_.properties['ServicePrincipalName'] 
-        $z = $y.Count
-
-        Write-Output "Name: $c"
-        Write-Output "Account: $x"
-        Write-Output "SPN Count: $z"
-            if ($z -gt 0)
-            {
-                Write-Output "Service Principal Names:"
-                $Y
-            }
-        Write-Host "----------------------"
-    }
+			Write-Output "Name: $MyName"
+			Write-Output "Account: $MyAccount"
+			Write-Output "SPN Count: $MySPNCount"
+				if ($MySPNCount -gt 0)
+				{
+					Write-Output "Service Principal Names:"
+					$MySPN
+				}
+			Write-Host "----------------------"
+		}
+	}
+	
+	# Display records found
+	Write-Host " " 
+	Write-Host "Found $record_count accounts that matched your search."
+	Write-Host " " 
 }
 
 
@@ -248,23 +274,36 @@ function Get-SpnByGroup{
     $objSearcher = New-Object System.DirectoryServices.DirectorySearcher
     $objSearcher.Filter = "(memberOf=CN=$Search,CN=Users$domain_list)"
     "name","samaccountname","ServicePrincipalName" | Foreach-Object {$null = $objSearcher.PropertiesToLoad.Add($_) }
-    Write-Host " "
-    Write-Host "----------------------"
-    $objSearcher.FindAll() | foreach {
+	
+ 	# Check if there are any matches for the search
+	$records = $objSearcher.FindAll()
+	$record_count = $records.count
+	if ($record_count -gt 0){
+		
+		# Dispaly account and service principal information
+		Write-Host " "  
+		Write-Host "----------------------"
+		$objSearcher.FindAll() | foreach {
+		
+			$MyName = $_.properties['name']
+			$MyAccount = $_.properties['samaccountname']
+			$MySPN = $_.properties['ServicePrincipalName'] 
+			$MySPNCount = $MySPN.Count
 
-        $c = $_.properties['name']
-        $x = $_.properties['samaccountname']
-        $y = $_.properties['ServicePrincipalName'] 
-        $z = $y.Count
-
-        Write-Output "Name: $c"
-        Write-Output "Account: $x"
-        Write-Output "SPN Count: $z"
-            if ($z -gt 0)
-            {
-                Write-Output "Service Principal Names:"
-                $Y
-            }
-        Write-Host "----------------------"
-    }
+			Write-Output "Name: $MyName"
+			Write-Output "Account: $MyAccount"
+			Write-Output "SPN Count: $MySPNCount"
+				if ($MySPNCount -gt 0)
+				{
+					Write-Output "Service Principal Names:"
+					$MySPN
+				}
+			Write-Host "----------------------"
+		}
+	}
+	
+	# Display records found
+	Write-Host " " 
+	Write-Host "Found $record_count accounts that matched your search."
+	Write-Host " " 
 }

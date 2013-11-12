@@ -1,45 +1,59 @@
 <#
 	.SYNOPSIS
-    Displays the clear text passwords for custom application pool idenities.
+    Displays the clear text passwords for custom IIS application pool idenities.
 	
 	.NOTES
 	Must be run as administrator.
+	Requires IIS 7 or above in order to support appcmd.exe.
 #>
 
-# Command to dump IIS application pool configurations from applicationHost.config
-$MyPools = c:\windows\system32\inetsrv\appcmd.exe list apppool
-$MyPoolsConfigs = c:\windows\system32\inetsrv\appcmd.exe list apppool /text:* 
+if (Test-Path ("c:\windows\system32\inetsrv\appcmd.exe")){
 
-# Display status summary to user
-$MyPoolCount = $MyPools.count
-Write-Host " "
-Write-Host "Found $MyPoolCount IIS application pools"
-Write-Host "Dumping IIS application pool credentials in clear text..."
-Write-Host " "
-
-$MyPoolsConfigs | foreach {
-
-	# Display application pool name
-	if($_ -like "*APPPOOL.NAME*")  
-	{	
-		Write-Host "------------------------------------"
-		write-host $_
-	}
+	# Display status to user
+	Write-Host " "
+	Write-Host "Found appcmd.exe"
 	
-	# Display username for application pool
-	if($_ -like "*username*")  
-	{
-		write-host $_
-	}
+	# Command to dump IIS application pool configurations from applicationHost.config
+	$MyPools = c:\windows\system32\inetsrv\appcmd.exe list apppool
+	$MyPoolsConfigs = c:\windows\system32\inetsrv\appcmd.exe list apppool /text:* 
+
+	# Display status summary to user
+	$MyPoolCount = $MyPools.count
+	Write-Host "Found $MyPoolCount IIS application pools"
+	Write-Host "Dumping IIS application pool credentials in clear text..."
+	Write-Host " "
+
+	$MyPoolsConfigs | foreach {
+
+		# Display application pool name
+		if($_ -like "*APPPOOL.NAME*")  
+		{	
+			Write-Host "------------------------------------"
+			write-host $_
+		}
+		
+		# Display username for application pool
+		if($_ -like "*username*")  
+		{
+			write-host $_
+		}
+		
+		# Display password for application pool
+		if($_ -like "*password*")  
+		{
+			write-host $_
+		}
+	} 
+	Write-Host "------------------------------------"
+	Write-Host " "
+}else{
 	
-	# Display password for application pool
-	if($_ -like "*password*")  
-	{
-		write-host $_
-	}
-} 
-Write-Host "------------------------------------"
-Write-Host " "
+	Write-Host " "
+	Write-Host "Missing appcmd.exe!!"
+	Write-Host " "
+}
+
+
 
 <#
 Below are things I would like to build out in the future.
