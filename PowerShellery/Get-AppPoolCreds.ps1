@@ -21,6 +21,10 @@ $modules = get-module -listavailable | select name | foreach {
 	}
 }
 
+# OS commands looks like....
+# c:\windows\system32\inetsrv\appcmd.exe list apppool /text:*
+# c:\windows\system32\inetsrv\appcmd.exe list apppool /text:processModel.username
+# c:\windows\system32\inetsrv\appcmd.exe list apppool /text:processModel.password
 
 # get the app pool name for each iis worker process
 #Get-WmiObject –class win32_process -filter 'name="w3wp.exe"' | Select-Object –Property Name, ProcessId, @{n='AppPool';e={$_.GetOwner().user}} 
