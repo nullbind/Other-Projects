@@ -166,6 +166,42 @@ function Get-Spn{
 			Write-Host " " 
 			Write-Host "Found $record_count accounts that matched your search."
 			Write-Host " " 
+			
+			#---------------------------------------------------------------------------------
+			
+			# Display account associated server information in uniqued list
+			Write-Host " "  
+			Write-Host "----------------------"
+			$objSearcher.FindAll() | foreach {
+				
+				$MyName = $_.properties['name']
+				[string]$MyAccount = $_.properties['samaccountname']
+				
+				$MySPN = $_.properties['ServicePrincipalName'] 
+				$Uniqued += @{$MyAccount=@()}
+							
+				$MySPNCount = $MySPN.Count
+
+				if ($MySPNCount -gt 0)
+				{					
+					$MySPN | foreach {
+						
+						$TempSpn =  $_.split("/")[1].split(":")[0]						
+																		
+						Write-Output "$MyAccount : $TempSpn"
+						$Uniqued[$MyAccount] += $TempSpn
+					}
+				}			
+			}
+			
+			Write-Host "Unique list of crap"
+			$Uniqued 
+			
+			# Display records found
+			Write-Host " " 
+			Write-Host "Found $record_count accounts that matched your search."
+			Write-Host " " 
+			
 		}else{
 		
 			# Display fail
