@@ -102,11 +102,14 @@ function Get-Spn{
 	
 	[CmdletBinding()]
 	Param(
-	  [Parameter(Mandatory=$True,Position=1)]
+	  [Parameter(Mandatory=$True)]
 	   [string]$Type,
 		
 	   [Parameter(Mandatory=$True)]
-	   [string]$Search
+	   [string]$Search,
+
+       [Parameter(Mandatory=$False)]
+	   [string]$List
 	)	
 	
 	# Format domain for LDAP
@@ -134,74 +137,95 @@ function Get-Spn{
 		# Setup LDAP query filters
 		$objSearcher = New-Object System.DirectoryServices.DirectorySearcher
 		$objSearcher.Filter = $MyFilter
-		"name","samaccountname","ServicePrincipalName" | Foreach-Object {$null = $objSearcher.PropertiesToLoad.Add($_) }
-		
+		"name","samaccountname","ServicePrincipalName" | Foreach-Object {$null = $objSearcher.PropertiesToLoad.Add($_) }		        
+
 		# Check if there are any matches for the search
 		$records = $objSearcher.FindAll()
 		$record_count = $records.count
 		if ($record_count -gt 0){
 			
-			# Display account and service principal information
-			Write-Host " "  
-			Write-Host "----------------------"
-			$objSearcher.FindAll() | foreach {
-			
-				$MyName = $_.properties['name']
-				$MyAccount = $_.properties['samaccountname']
-				$MySPN = $_.properties['ServicePrincipalName'] 
-				$MySPNCount = $MySPN.Count
-
-				Write-Output "Name: $MyName"
-				Write-Output "Account: $MyAccount"
-				Write-Output "SPN Count: $MySPNCount"
-				if ($MySPNCount -gt 0)
-				{
-					Write-Output "Service Principal Names:"
-					$MySPN
-				}
-				Write-Host "----------------------"
-			}
-			
-			# Display records found
-			Write-Host " " 
-			Write-Host "Found $record_count accounts that matched your search."
-			Write-Host " " 
-			
-			#---------------------------------------------------------------------------------
-			
-			# Display account associated server information in uniqued list
-			Write-Host " "  
-			Write-Host "----------------------"
-			$objSearcher.FindAll() | foreach {
+            if($list){          
+        
+                # Dispaly minimal information
+	            # Display account associated server information in uniqued list			
+	            $objSearcher.FindAll() | foreach {
 				
-				$MyName = $_.properties['name']
-				[string]$MyAccount = $_.properties['samaccountname']
+		            $MyName = $_.properties['name']
+		            [string]$MyAccount = $_.properties['samaccountname']
 				
-				$MySPN = $_.properties['ServicePrincipalName'] 
-				$Uniqued += @{$MyAccount=@()}
+		            $MySPN = $_.properties['ServicePrincipalName'] 
+		            $Uniqued += @{$MyAccount=@()}
 							
-				$MySPNCount = $MySPN.Count
+		            $MySPNCount = $MySPN.Count
 
-				if ($MySPNCount -gt 0)
-				{					
-					$MySPN | foreach {
+		            if ($MySPNCount -gt 0)
+		            {					
+		                $MySPN | foreach {
 						
-						$TempSpn =  $_.split("/")[1].split(":")[0]						
-																		
-						Write-Output "$MyAccount : $TempSpn"
-						$Uniqued[$MyAccount] += $TempSpn
-					}
-				}			
-			}
+			            $TempSpn =  $_.split("/")[1].split(":")[0]																														
+			            $Uniqued[$MyAccount] += $TempSpn
+			            }
+		            }			
+	            }
 			
-			Write-Host "Unique list of crap"
-			$Uniqued 
+               Write-Host " "  
+               Write-Host "----------------------------------------------------"
+               Write-Host "List of servers where accounts are registered to run"
+               Write-Host "----------------------------------------------------"
+
+               # Uniq the servers for each account
+               $Uniqued.keys.clone()| Foreach {
+                    $Uniqued[$_]=  $Uniqued[$_] | select -Unique
+               }
+            
+               # If a spn exist for an account then print the info   
+               $account_count = 0    
+
+               $Uniqued.keys | Foreach {
+
+                    $account = $_ ; 
+
+                    # Only display accounts if they have a spn
+                    if ($Uniqued[$_].Count -gt 0) {
+                        
+                        $account_count = $account_count+1
+
+                        # Display account and associated spn
+                        $Uniqued[$_] | %{ $account +" : " +$_;}
+                    }
+                }
+                # Display records found
+                Write-Host "----------------------------------------------------"
+			    Write-Host "Found $account_count accounts with SPNs that matched your search."
+			    Write-Host " "  
+	        }else { 
+
+			    # Display account and service principal information
+			    Write-Host " "  
+			    Write-Host "----------------------"                
+			    $objSearcher.FindAll() | foreach {
 			
-			# Display records found
-			Write-Host " " 
-			Write-Host "Found $record_count accounts that matched your search."
-			Write-Host " " 
+				    $MyName = $_.properties['name']
+				    $MyAccount = $_.properties['samaccountname']
+				    $MySPN = $_.properties['ServicePrincipalName'] 
+				    $MySPNCount = $MySPN.Count
+
+				    Write-Output "Name: $MyName"
+				    Write-Output "Account: $MyAccount"
+				    Write-Output "SPN Count: $MySPNCount"
+				    if ($MySPNCount -gt 0)
+				    {
+					    Write-Output "Service Principal Names:"
+					    $MySPN
+				    }
+				    Write-Host "----------------------"
+			    }
 			
+			    # Display records found
+			    Write-Host " " 
+			    Write-Host "Found $record_count accounts that matched your search."
+			    Write-Host " "     
+            }
 		}else{
 		
 			# Display fail
@@ -216,4 +240,8 @@ function Get-Spn{
 		Write-Host "Invalid query type"
 		Write-Host " "
 	}    
+
+ 
 }
+
+
