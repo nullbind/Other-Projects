@@ -260,12 +260,19 @@ function Get-Spn{
 				    Write-Host "----------------------"
 			    }
 			
-                 $dataTable | Sort-Object Account,Server| Format-Table -AutoSize 
-
-			    # Display records found
+                 # Display records found
 			    Write-Host " " 
 			    Write-Host "Found $record_count accounts that matched your search."
-			    Write-Host " "     
+			    Write-Host " "  
+
+                $dataTable | Sort-Object Account,Server| Format-Table -AutoSize 
+
+                $instance_count = $dataTable.rows.count
+
+			    Write-Host "Found $instance_count service instances that matched your search."
+			    Write-Host " "  
+
+			      
             }
 		}else{
 		
