@@ -233,6 +233,7 @@ function Get-Spn{
                # Create and name column in table
                $dataTable.Columns.Add("Account") | Out-Null
                $dataTable.Columns.Add("Server") | Out-Null
+               $dataTable.Columns.Add("Service") | Out-Null
                                
 			    $objSearcher.FindAll() | foreach {
 			
@@ -251,8 +252,9 @@ function Get-Spn{
 					    Write-Output "Service Principal Names:"
 					    $MySPN
                         foreach ($item in $mySPN){
-                            $x =  $MySPN.split("/")[1].split(":")[0]	                            
-                            $dataTable.Rows.Add($MyAccount, $x) | Out-Null  
+                            $x =  $MySPN.split("/")[1].split(":")[0]	
+                            $y =  $MySPN.split("/")[0]                            
+                            $dataTable.Rows.Add($MyAccount, $x, $y) | Out-Null  
                         }
 				    }
 				    Write-Host "----------------------"
@@ -283,6 +285,9 @@ function Get-Spn{
  
 }
 
-#get-spn -type service -search "*sql*" 
+get-spn -type group -search "Domain Admins" 
 
+#create a new spn
+#setspn -A MSSQLSvc/myhost.redmond.microsoft.com:1433 accountname
+#setspn -A www/hav3.demo.com:80 svc_PoolAdmin
 
