@@ -40,7 +40,7 @@ function Get-Spn{
     when escalating privileges during penetration tests.
 	
 	.EXAMPLE	 
-	PS C:\> Get-Spn -type spn -search "MSSQLSvc"
+	PS C:\> Get-Spn -type service -search "MSSQLSvc"
 	----------------------
 	Account: SQLSERVER1-PROD$
 	SPN Count: 2
@@ -95,9 +95,11 @@ function Get-Spn{
      http://www.netspi.com
      http://msdn.microsoft.com/en-us/library/windows/desktop/ms677949(v=vs.85).aspx
 	 http://technet.microsoft.com/en-us/library/cc731241.aspx
+     http://technet.microsoft.com/en-us/library/cc978021.aspx
 
 	.NOTES
     Scott Sutherland 2013, NetSPI
+    The LDAP function skeleton was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" function.
 	#>	
 	
 	[CmdletBinding()]
@@ -116,38 +118,39 @@ function Get-Spn{
     $current_domain = $env:USERDNSDOMAIN
     $domain_list = ""
     $current_domain.split(".")| foreach { $domain_list = $domain_list + ",DC=$_" }
-	
+
 	# Create query options
 	$QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users$domain_list))"	
 	$QueryUser = "(samaccountname=$Search)"
 	$QuerySpn = "(ServicePrincipalName=$Search)"
 	
 	# Check query type
-	if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "spn")){
+	if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
 		
 		# Define query based on type
 		switch ($Type) 
 		{ 
 			"group" {$MyFilter = $QueryGroup} 
 			"user" {$MyFilter = $QueryUser} 
-			"spn" {$MyFilter = $QuerySpn} 
+			"service" {$MyFilter = $QuerySpn} 
 			default {"Invalid query type."}
 		}
 		
 		# Setup LDAP query filters
 		$objSearcher = New-Object System.DirectoryServices.DirectorySearcher
 		$objSearcher.Filter = $MyFilter
-		"name","samaccountname","ServicePrincipalName" | Foreach-Object {$null = $objSearcher.PropertiesToLoad.Add($_) }		        
+		"name","description","samaccountname","ServicePrincipalName" | Foreach-Object {$null = $objSearcher.PropertiesToLoad.Add($_) }		        
 
 		# Check if there are any matches for the search
 		$records = $objSearcher.FindAll()
 		$record_count = $records.count
 		if ($record_count -gt 0){
 			
-            if($list){          
-        
+            if($list){                      
+
                 # Dispaly minimal information
 	            # Display account associated server information in uniqued list			
+                # get-process | select @{name = 'test';expression = {$_.ProcessName}}
 	            $objSearcher.FindAll() | foreach {
 				
 		            $MyName = $_.properties['name']
@@ -155,23 +158,34 @@ function Get-Spn{
 				
 		            $MySPN = $_.properties['ServicePrincipalName'] 
 		            $Uniqued += @{$MyAccount=@()}
-							
 		            $MySPNCount = $MySPN.Count
 
+                    # Check if any SPN exist
 		            if ($MySPNCount -gt 0)
 		            {					
 		                $MySPN | foreach {
 						
 			            $TempSpn =  $_.split("/")[1].split(":")[0]																														
-			            $Uniqued[$MyAccount] += $TempSpn
+			            $Uniqued[$MyAccount] += $TempSpn                           
+
 			            }
 		            }			
-	            }
-			
+	            }			                  
+
                Write-Host " "  
                Write-Host "----------------------------------------------------"
                Write-Host "List of servers where accounts are registered to run"
                Write-Host "----------------------------------------------------"
+
+               # Setup hash array to store accounts and server information
+               $UserProps = [ordered]@{}
+               
+               # Create data table to house data
+               $dataTable = New-Object System.Data.DataTable 
+
+               # Create and name column in table
+               $dataTable.Columns.Add("Account") | Out-Null
+               $dataTable.Columns.Add("Server") | Out-Null
 
                # Uniq the servers for each account
                $Uniqued.keys.clone()| Foreach {
@@ -192,8 +206,17 @@ function Get-Spn{
 
                         # Display account and associated spn
                         $Uniqued[$_] | %{ $account +" : " +$_;}
-                    }
-                }
+                        $dataTable.Rows.Add($account, $_) | Out-Null  
+                    } 
+                }     
+                # Format array as object and display records
+                #[pscustomobject]$UserProps  
+
+                $Uniqued[$_]
+
+                $dataTable | Sort-Object Account,Server| Format-Table -AutoSize 
+                     
+
                 # Display records found
                 Write-Host "----------------------------------------------------"
 			    Write-Host "Found $account_count accounts with SPNs that matched your search."
@@ -202,25 +225,41 @@ function Get-Spn{
 
 			    # Display account and service principal information
 			    Write-Host " "  
-			    Write-Host "----------------------"                
+			    Write-Host "----------------------"
+
+               # Create data table to house data
+               $dataTable = New-Object System.Data.DataTable 
+
+               # Create and name column in table
+               $dataTable.Columns.Add("Account") | Out-Null
+               $dataTable.Columns.Add("Server") | Out-Null
+                               
 			    $objSearcher.FindAll() | foreach {
 			
 				    $MyName = $_.properties['name']
-				    $MyAccount = $_.properties['samaccountname']
+				    [string]$MyAccount = $_.properties['samaccountname']
 				    $MySPN = $_.properties['ServicePrincipalName'] 
+                    $MyDescription = $_.properties['description']                   
 				    $MySPNCount = $MySPN.Count
 
 				    Write-Output "Name: $MyName"
 				    Write-Output "Account: $MyAccount"
+				    Write-Output "Description: $MyDescription"
 				    Write-Output "SPN Count: $MySPNCount"
 				    if ($MySPNCount -gt 0)
 				    {
 					    Write-Output "Service Principal Names:"
 					    $MySPN
+                        foreach ($item in $mySPN){
+                            $x =  $MySPN.split("/")[1].split(":")[0]	                            
+                            $dataTable.Rows.Add($MyAccount, $x) | Out-Null  
+                        }
 				    }
 				    Write-Host "----------------------"
 			    }
 			
+                 $dataTable | Sort-Object Account,Server| Format-Table -AutoSize 
+
 			    # Display records found
 			    Write-Host " " 
 			    Write-Host "Found $record_count accounts that matched your search."
@@ -243,5 +282,7 @@ function Get-Spn{
 
  
 }
+
+#get-spn -type service -search "*sql*" 
 
 
