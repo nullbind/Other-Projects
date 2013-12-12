@@ -20,18 +20,16 @@ function Get-SPN
     when escalating privileges during penetration tests.
 	
 	.EXAMPLE	 
-    Get-SPN -type service -search www"
+    Get-SPN -type service -search "MSSQLSvc*"
+    Get-SPN -type service -search "*sql*"
+    Get-SPN -type service -search "*www*"
 
 	.EXAMPLE	 
     Get-SPN -type user -search "sqladmin" 
 
 	.EXAMPLE	 
-    Get-SPN -type group -search "Domain Admins" 
-
-	.EXAMPLE	 
-    Get-SPN -type group -search "Domain Admins" -list yes
-
-	.EXAMPLE	 
+    Get-SPN -type group -search "Domain Admins" 	 
+    Get-SPN -type group -search "Domain Admins" -list yes	 
     Get-SPN -type group -search "Domain Admins" -list yes | Select Server
 	
     .LINK
@@ -106,17 +104,19 @@ function Get-SPN
 	    # Create query options - SPS
 	    $QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users$domain_list))"	
 	    $QueryUser = "(samaccountname=$Search)"
-	    $QuerySpn = "(ServicePrincipalName=$Search)"
+	    $QueryService = "(ServicePrincipalName=$Search)"
+
+        Write-Host "blah $QueryService Blah"
         
         # Check SPN query type - SPS
-	    if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "spn")){
+	    if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
 		
 		    # Define query based on type
 		    switch ($Type) 
 		    { 
 			    "group" {$MyFilter = $QueryGroup} 
 			    "user" {$MyFilter = $QueryUser} 
-			    "spn" {$MyFilter = $QuerySpn} 
+			    "service" {$MyFilter = $QueryService} 
 			    default {"Invalid query type."}
 		    }
         }
@@ -245,10 +245,14 @@ function Get-SPN
 }
 
 
-#Buggy
-#Get-SPN -type service -search "www"
-
-#Done
+# Tested and work
+#Get-SPN -type service -search "*www*"
+#Get-SPN -type service -search "*sql*"
 #Get-SPN -type user -search "sqladmin"
-#Get-SPN -type group -search "Domain Admins"
+Get-SPN -type group -search "Domain Admins"
 #Get-SPN -type group -search "Domain Admins" -list yes
+#Get-SPN -type group -search "Domain Admins" -list yes | Select server
+
+# known / pending Issues
+# - Group search uses users defaultdnsdomain instead of specific
+# - need to debug authenticating to specified dc from another domain
