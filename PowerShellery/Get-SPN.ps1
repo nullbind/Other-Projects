@@ -105,8 +105,6 @@ function Get-SPN
 	    $QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users$domain_list))"	
 	    $QueryUser = "(samaccountname=$Search)"
 	    $QueryService = "(ServicePrincipalName=$Search)"
-
-        Write-Host "blah $QueryService Blah"
         
         # Check SPN query type - SPS
 	    if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
@@ -246,10 +244,11 @@ function Get-SPN
 
 
 # Tested and work
+Get-SPN -type service -search "MSSQLSvc"
 #Get-SPN -type service -search "*www*"
 #Get-SPN -type service -search "*sql*"
 #Get-SPN -type user -search "sqladmin"
-Get-SPN -type group -search "Domain Admins"
+#Get-SPN -type group -search "Domain Admins"
 #Get-SPN -type group -search "Domain Admins" -list yes
 #Get-SPN -type group -search "Domain Admins" -list yes | Select server
 
