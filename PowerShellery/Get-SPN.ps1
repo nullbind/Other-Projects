@@ -253,8 +253,10 @@ function Get-SPN
 }
 
 # Default command
-Get-SPN  -type group -search "Domain Admins" 
+Get-SPN  -type group -search "Domain Admins"
 
 # Pending Fixes
 # - Fix duplicate output when -search "*" on -type service
 # - Fix spaces and tabs
+# - Verify the system is on a domain if no domain control is set before running
+# - verify powershell version 3 before running
