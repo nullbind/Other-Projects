@@ -54,8 +54,9 @@ function Get-SPN
 	
 	.NOTES
 	Author: Scott Sutherland 2013, NetSPI
-	This script require Powershell v3
-	The LDAP function skeleton was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" function found in PoshSec-Mod.	
+	This script requires Powershell v3.
+	The LDAP skeleton used to create this function was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" 
+	function found in PoshSec-Mod.	
 	#>	
 	
     [CmdletBinding()]
