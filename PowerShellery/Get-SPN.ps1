@@ -43,7 +43,7 @@ function Get-SPN
 	Get-SPN  -type group -search "Domain Admins" -List yes
 	Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
 	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user 
-	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user-List yes
+	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user -List yes
 	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user2 -List yes | Select server 
 	
 	.LINK
