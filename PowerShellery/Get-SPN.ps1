@@ -23,14 +23,18 @@ function Get-SPN
     Get-SPN -type service -search "MSSQLSvc*"
     Get-SPN -type service -search "*sql*"
     Get-SPN -type service -search "*www*"
+    Get-SPN -type service -search "*vnc*"
 
 	.EXAMPLE	 
-    Get-SPN -type user -search "sqladmin" 
+    Get-SPN -type user -search "svc-sql" 
+    Get-SPN -type user -search "ServerAdmin"
+    Get-SPN -type user -search "myDA"
 
 	.EXAMPLE	 
     Get-SPN -type group -search "Domain Admins" 	 
     Get-SPN -type group -search "Domain Admins" -list yes	 
     Get-SPN -type group -search "Domain Admins" -list yes | Select Server
+    Get-SPN -type group -search "Domain Admins" -DomainController 192.168.1.109 -Credential demo\user2 
 	
     .LINK
     http://www.netspi.com
@@ -39,8 +43,9 @@ function Get-SPN
     http://technet.microsoft.com/en-us/library/cc978021.aspx
 
 	.NOTES
-    Scott Sutherland 2013, NetSPI
-    The LDAP function skeleton was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" function.
+    Author: Scott Sutherland 2013, NetSPI
+    This script require Powershell v3
+    The LDAP function skeleton was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" function found in PoshSec-Mod.
 	#>	
     [CmdletBinding()]
     Param(
@@ -67,7 +72,7 @@ function Get-SPN
         [string]$SearchDN,
 
         [Parameter(Mandatory=$True,
-        HelpMessage="Set type user, group, or service to search by.")]
+        HelpMessage="Search by domain user, domain group, or SPN service name to search for.")]
 	    [string]$Type,
 
 		[Parameter(Mandatory=$True,
@@ -243,8 +248,8 @@ function Get-SPN
 }
 
 
-# Tested and work
-Get-SPN -type service -search "MSSQLSvc"
+# Commands tested that work
+#Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.109 -Credential demo\user2
 #Get-SPN -type service -search "*www*"
 #Get-SPN -type service -search "*sql*"
 #Get-SPN -type user -search "sqladmin"
@@ -255,3 +260,4 @@ Get-SPN -type service -search "MSSQLSvc"
 # known / pending Issues
 # - Group search uses users defaultdnsdomain instead of specific
 # - need to debug authenticating to specified dc from another domain
+# - need to dedpulicate the dta table before displaying info...seems to be a bug somewhere
