@@ -252,9 +252,6 @@ function Get-SPN
     }
 }
 
-# Default command
-Get-SPN  -type service -search "*" -Credential demo\user2 -DomainController 192.168.1.109 -list yes 
-
 
 # Pending Fixes
 # - Fix spaces and tabs
