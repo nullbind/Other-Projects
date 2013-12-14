@@ -209,7 +209,8 @@ function Get-SPN
                         foreach ($item in $_.properties['ServicePrincipalName'])
                         {
                             $x =  $_.properties['ServicePrincipalName'].split("/")[1].split(":")[0]	
-                            $y =  $_.properties['ServicePrincipalName'].split("/")[0]                                                                                   
+                            $y =  $item.split("/")[0]  
+                                                                          
                             $DataTable.Rows.Add($($_.properties.samaccountname), $x, $y) | Out-Null  
                         }
 
@@ -253,7 +254,11 @@ function Get-SPN
 }
 
 
+# Default command
+Get-SPN  -type service -search "*" -Credential demo\user2 -DomainController 192.168.1.109 
+
 # Pending Fixes
 # - Fix spaces and tabs
 # - Verify the system is on a domain if no domain control is set before running
 # - verify powershell version 3 before running
+# - still get service dups in list output of full view
