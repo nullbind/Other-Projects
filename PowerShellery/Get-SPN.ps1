@@ -240,7 +240,7 @@ function Get-SPN
                     }else{
                         
                         # Dispaly list view of results in sorted order
-                        $DataTable | Sort-Object Account,Server,Service 
+                         $DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
                     }
         }else{
             
@@ -253,10 +253,10 @@ function Get-SPN
 }
 
 # Default command
-Get-SPN  -type group -search "Domain Admins"
+Get-SPN  -type service -search "*" -Credential demo\user2 -DomainController 192.168.1.109 -list yes 
+
 
 # Pending Fixes
-# - Fix duplicate output when -search "*" on -type service
 # - Fix spaces and tabs
 # - Verify the system is on a domain if no domain control is set before running
 # - verify powershell version 3 before running
