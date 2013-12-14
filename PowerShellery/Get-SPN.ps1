@@ -19,32 +19,32 @@ function Get-SPN
 	group might be logged in if the accounts where used to run services on the domain 
 	(which is very common).  So this should be handy for both system administrators and 
 	penetration testers.  The script current support trusted connection and provided
-    credentials.
+	credentials.
 	
 	.EXAMPLE	 
-    Get-SPN  -type service -search "*www*"
-    Get-SPN  -type service -search "MSSQLSvc*"
-    Get-SPN  -type service -search "MSSQLSvc*" -List yes
-    Get-SPN  -type service -search "MSSQLSvc*" -List yes | Select Server
-    Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user -List yes
-    Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user -List yes | Select server
+	Get-SPN  -type service -search "*www*"
+	Get-SPN  -type service -search "MSSQLSvc*"
+	Get-SPN  -type service -search "MSSQLSvc*" -List yes
+	Get-SPN  -type service -search "MSSQLSvc*" -List yes | Select Server
+	Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user -List yes
+	Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user -List yes | Select server
 
 	.EXAMPLE	 
-    Get-SPN  -type user -search "sqladmin"
-    Get-SPN  -type user -search "sqladmin" -List yes
-    Get-SPN  -type user -search "sqladmin" -List yes | Select Server
-    Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user -List yes
-    Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user -List yes | Select server
+	Get-SPN  -type user -search "sqladmin"
+	Get-SPN  -type user -search "sqladmin" -List yes
+	Get-SPN  -type user -search "sqladmin" -List yes | Select Server
+	Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user -List yes
+	Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user -List yes | Select server
 
 	.EXAMPLE	 
-    Get-SPN  -type group -search "Domain Admins"
-    Get-SPN  -type group -search "Domain Admins" -List yes
-    Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
-    Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user 
-    Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user-List yes
-    Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user2 -List yes | Select server 
+	Get-SPN  -type group -search "Domain Admins"
+	Get-SPN  -type group -search "Domain Admins" -List yes
+	Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
+	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user 
+	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user-List yes
+	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user2 -List yes | Select server 
 	
 	.LINK
 	http://www.netspi.com
