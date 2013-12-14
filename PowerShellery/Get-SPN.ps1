@@ -115,14 +115,14 @@ function Get-SPN
     Process
     {
 	
-	    # Setup LDAP queries
-        $CurrentDomain = $objDomain.distinguishedName
-        $QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users,$CurrentDomain))"
-	    $QueryUser = "(samaccountname=$Search)"
-	    $QueryService = "(ServicePrincipalName=$Search)"
+		# Setup LDAP queries
+		$CurrentDomain = $objDomain.distinguishedName
+		$QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users,$CurrentDomain))"
+		$QueryUser = "(samaccountname=$Search)"
+		$QueryService = "(ServicePrincipalName=$Search)"
         
         # Define the search type and other LDAP query options
-	    if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
+		if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
 		
 		    # Define query based on type
 		    switch ($Type) 
@@ -185,8 +185,7 @@ function Get-SPN
                     }))
                     $UserProps.Add('LastLogon', [dateTime]::FromFileTime("$($_.properties.lastlogon)"))
                     $UserProps.Add('GroupMembership', "$($_.properties.memberof)")
-                    $UserProps.Add('SPN Count', "$($_.properties['ServicePrincipalName'].count)") 
-                    #$UserProps.Add('ServicePrincipalName', "$($_.properties['ServicePrincipalName'])")                  
+                    $UserProps.Add('SPN Count', "$($_.properties['ServicePrincipalName'].count)")                 
 
                     # Only display line for detailed view
                     If (!$list){
@@ -215,7 +214,6 @@ function Get-SPN
                         }
 
 				    }            
-                    
                     
                     # Only display line for detailed view
                     If (!$list){
@@ -254,10 +252,8 @@ function Get-SPN
     }
 }
 
-
-# Default Outpu
+# Default command
 Get-SPN  -type group -search "Domain Admins" 
-
 
 # Pending Fixes
 # - Fix duplicate output when -search "*" on -type service
