@@ -244,7 +244,7 @@ function Get-SPN
                     }
         }else{
             
-            # Display fail
+			# Display fail
 			Write-Host " " 
 			Write-Host "No records were found that match your search."
 			Write-Host ""
