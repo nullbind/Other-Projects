@@ -14,11 +14,11 @@ function Get-SPN
 	Displays Service Principal Names (SPN) for domain accounts based on SPN service name, 
 	domain account, or domain group via LDAP queries. This information can be used to 
 	identify systems running specific services and the domain accounts running them.  
-	For example, this script could be used to locate systems where a specific domain 
-	account was configured to run SQL Server.  It can also be used to help find systems
-	where members of the Domain Admins group might be logged in if the accounts where 
-	used to run services on the domain (which is very common).  So this should be handy
-	for both system administrators and penetration testers.
+	For example, this script could be used to locate domain systems where SQL Server has been 
+	installed.  It can also be used to help find systems where members of the Domain Admins 
+	group might be logged in if the accounts where used to run services on the domain 
+	(which is very common).  So this should be handy for both system administrators and 
+	penetration testers.
 	
 	.EXAMPLE	 
 	Get-SPN -type service -search "MSSQLSvc*"
