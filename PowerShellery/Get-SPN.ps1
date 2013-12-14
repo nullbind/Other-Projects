@@ -5,48 +5,49 @@
 function Get-SPN
 {
 
-<#
+	<#
 	.SYNOPSIS
-    Displays Service Principal Names (SPN) for domain accounts based on SPN, domain account, 
-    or domain group for the current domain via LDAP queries.
+	Displays Service Principal Names (SPN) for domain accounts based on SPN, domain account, 
+	or domain group for the current domain via LDAP queries.
 
 	.DESCRIPTION
-    Displays Service Principal Names (SPN) for domain accounts based on SPN, domain account, 
-    or domain group for the current domain via LDAP queries.  This information can be used to 
-    identify systems running specific services, and in some cases locate systems that specific 
-    domain accounts are running on.  For example, it could be used to locate systems where a 
-    specific domain account was used to run SQL Server.  It can also be used to identify systems 
-    where Domain Admins or other domain group members may be logged in.  Which can be valuable 
-    when escalating privileges during penetration tests.
+	Displays Service Principal Names (SPN) for domain accounts based on SPN, domain account, 
+	or domain group for the current domain via LDAP queries.  This information can be used to 
+	identify systems running specific services, and in some cases locate systems that specific 
+	domain accounts are running on.  For example, it could be used to locate systems where a 
+	specific domain account was used to run SQL Server.  It can also be used to identify systems 
+	where Domain Admins or other domain group members may be logged in.  Which can be valuable 
+	when escalating privileges during penetration tests.
 	
 	.EXAMPLE	 
-    Get-SPN -type service -search "MSSQLSvc*"
-    Get-SPN -type service -search "*sql*"
-    Get-SPN -type service -search "*www*"
-    Get-SPN -type service -search "*vnc*"
+	Get-SPN -type service -search "MSSQLSvc*"
+	Get-SPN -type service -search "*sql*"
+	Get-SPN -type service -search "*www*"
+	Get-SPN -type service -search "*vnc*"
 
 	.EXAMPLE	 
-    Get-SPN -type user -search "svc-sql" 
-    Get-SPN -type user -search "ServerAdmin"
-    Get-SPN -type user -search "myDA"
+	Get-SPN -type user -search "svc-sql" 
+	Get-SPN -type user -search "ServerAdmin"
+	Get-SPN -type user -search "myDA"
 
 	.EXAMPLE	 
-    Get-SPN -type group -search "Domain Admins" 	 
-    Get-SPN -type group -search "Domain Admins" -list yes	 
-    Get-SPN -type group -search "Domain Admins" -list yes | Select Server
-    Get-SPN -type group -search "Domain Admins" -DomainController 192.168.1.109 -Credential demo\user2 
+	Get-SPN -type group -search "Domain Admins" 	 
+	Get-SPN -type group -search "Domain Admins" -list yes	 
+	Get-SPN -type group -search "Domain Admins" -list yes | Select Server
+	Get-SPN -type group -search "Domain Admins" -DomainController 192.168.1.109 -Credential demo\user2 
 	
-    .LINK
-    http://www.netspi.com
-    http://msdn.microsoft.com/en-us/library/windows/desktop/ms677949(v=vs.85).aspx
-    http://technet.microsoft.com/en-us/library/cc731241.aspx
-    http://technet.microsoft.com/en-us/library/cc978021.aspx
-
+	.LINK
+	http://www.netspi.com
+	http://msdn.microsoft.com/en-us/library/windows/desktop/ms677949(v=vs.85).aspx
+	http://technet.microsoft.com/en-us/library/cc731241.aspx
+	http://technet.microsoft.com/en-us/library/cc978021.aspx
+	
 	.NOTES
-    Author: Scott Sutherland 2013, NetSPI
-    This script require Powershell v3
-    The LDAP function skeleton was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" function found in PoshSec-Mod.
+	Author: Scott Sutherland 2013, NetSPI
+	This script require Powershell v3
+	The LDAP function skeleton was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" function found in PoshSec-Mod.	
 	#>	
+	
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$false,
