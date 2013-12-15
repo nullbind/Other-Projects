@@ -208,7 +208,7 @@ function Get-SPN
                         # Add records to data table
                         foreach ($item in $_.properties['ServicePrincipalName'])
                         {
-                            $x =  $_.properties['ServicePrincipalName'].split("/")[1].split(":")[0]	
+                            $x =  $item.split("/")[1].split(":")[0]	
                             $y =  $item.split("/")[0]  
                                                                           
                             $DataTable.Rows.Add($($_.properties.samaccountname), $x, $y) | Out-Null  
@@ -228,10 +228,11 @@ function Get-SPN
 
                         # Display number of accounts found
 			            Write-Host "Found $RecordCount accounts that matched your search."   
-                        Write-Host "-------------------------------------------------------------"                                    
+                        Write-Host "-------------------------------------------------------------"
+                        Write-Host " "                                    
 
                         # Dispaly list view of results
-                        $DataTable | Sort-Object Account,Server,Service | Format-Table -AutoSize
+                        $DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
 
                         # Display number of service instances
                         $InstanceCount = $DataTable.rows.count
@@ -255,10 +256,9 @@ function Get-SPN
 
 
 # Default command
-Get-SPN  -type service -search "*" -Credential demo\user2 -DomainController 192.168.1.109 
+#Get-SPN  -type user -search "sqladmin" -Credential demo\user2 -DomainController 192.168.1.109 
 
 # Pending Fixes
 # - Fix spaces and tabs
 # - Verify the system is on a domain if no domain control is set before running
 # - verify powershell version 3 before running
-# - still get service dups in list output of full view
