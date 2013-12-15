@@ -121,10 +121,10 @@ function Get-SPN
         
         # Define the search type and other LDAP query options
         if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
-		
-		    # Define query based on type
-		    switch ($Type) 
-		    { 
+
+            # Define query based on type
+            switch ($Type) 
+            { 
 			    "group" {$MyFilter = $QueryGroup} 
 			    "user" {$MyFilter = $QueryUser} 
 			    "service" {$MyFilter = $QueryService} 
