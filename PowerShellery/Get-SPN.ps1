@@ -16,7 +16,7 @@ function Get-SPN
 	For example, this script could be used to locate domain systems where SQL Server has been 
 	installed.  It can also be used to help find systems where members of the Domain Admins 
 	group might be logged in if the accounts where used to run services on the domain 
-	(which is very common).  So this should be handy for both system administrators and 
+	(which is very common). So this should be handy for both system administrators and 
 	penetration testers.  The script currently supports trusted connections and provided
 	credentials.
 	
@@ -39,7 +39,7 @@ function Get-SPN
     Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 
 	.EXAMPLE	 
-	Get-SPN  -type group -search "Domain Users"
+    Get-SPN  -type group -search "Domain Users"
 	Get-SPN  -type group -search "Domain Admins"
     Get-SPN  -type group -search "Domain Admins" -List yes
     Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
