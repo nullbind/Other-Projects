@@ -56,6 +56,11 @@ function Get-SPN
 	This script requires Powershell v3.
 	The LDAP skeleton used to create this function was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" 
     function found in PoshSec-Mod.	
+
+    TODO
+    - Validate Powershell v3 with $PSVersionTable.psversion.Major
+    - Validate the system is on a domain if no credentials are set with $env:USERDNSDOMAIN
+
 	#>	
 	
     [CmdletBinding()]
@@ -253,8 +258,3 @@ function Get-SPN
 
 # Default command
 Get-SPN  -type group -search "Domain Admins" -Credential demo\user2 -DomainController 192.168.1.109 
-
-# Pending Fixes
-# - Fix spaces and tabs - manual
-# - Verify the system is on a domain if no domain control is set before running - $env:USERDNSDOMAIN
-# - verify powershell version 3 before running - $PSVersionTable.psversion.Major
