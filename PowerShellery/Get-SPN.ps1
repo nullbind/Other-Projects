@@ -4,7 +4,6 @@
 ##########################################
 function Get-SPN
 {
-
 	<#
 	.SYNOPSIS
 	Displays Service Principal Names (SPN) for domain accounts based on SPN service name, 
@@ -56,7 +55,7 @@ function Get-SPN
 	Author: Scott Sutherland 2013, NetSPI
 	This script requires Powershell v3.
 	The LDAP skeleton used to create this function was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" 
-	function found in PoshSec-Mod.	
+    function found in PoshSec-Mod.	
 	#>	
 	
     [CmdletBinding()]
@@ -97,32 +96,31 @@ function Get-SPN
     )
 
     Begin
-    {
-        
-        # Setup domain and domain controller to be used
+    {        
+        # Setup domain and user defiend domain controller(if defined)
         if ($DomainController -and $Credential.GetNetworkCredential().Password)
         {
-            $objDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
-            $objSearcher = New-Object System.DirectoryServices.DirectorySearcher $objDomain
+            $ObjDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
+            $ObjSearcher = New-Object System.DirectoryServices.DirectorySearcher $ObjDomain
         }
         else
         {
-            $objDomain = [ADSI]""  
-            $objSearcher = New-Object System.DirectoryServices.DirectorySearcher $objDomain
+            $ObjDomain = [ADSI]""  
+            $ObjSearcher = New-Object System.DirectoryServices.DirectorySearcher $ObjDomain
         }
     }
 
     Process
     {
 	
-		# Setup LDAP queries
-		$CurrentDomain = $objDomain.distinguishedName
-		$QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users,$CurrentDomain))"
-		$QueryUser = "(samaccountname=$Search)"
-		$QueryService = "(ServicePrincipalName=$Search)"
+        # Setup LDAP queries
+        $CurrentDomain = $ObjDomain.distinguishedName
+        $QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users,$CurrentDomain))"
+        $QueryUser = "(samaccountname=$Search)"
+        $QueryService = "(ServicePrincipalName=$Search)"
         
         # Define the search type and other LDAP query options
-		if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
+        if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
 		
 		    # Define query based on type
 		    switch ($Type) 
@@ -140,11 +138,11 @@ function Get-SPN
 
         if ($SearchDN)
         {
-            $objSearcher.SearchDN = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$($SearchDN)")
+            $ObjSearcher.SearchDN = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$($SearchDN)")
         }
 
         # Get a count of the number of accounts that match the LDAP query
-        $Records = $objSearcher.FindAll()
+        $Records = $ObjSearcher.FindAll()
 		$RecordCount = $Records.count
 
         # Display search results if results exist
