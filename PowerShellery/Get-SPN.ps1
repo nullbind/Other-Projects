@@ -65,7 +65,7 @@ function Get-SPN
         HelpMessage="Credentials to use when connecting to a Domain Controller.")]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
-        
+
         [Parameter(Mandatory=$false,
         HelpMessage="Domain controller for Domain and Site that you want to query against.")]
         [string]$DomainController,
@@ -85,15 +85,15 @@ function Get-SPN
 
         [Parameter(Mandatory=$True,
         HelpMessage="Search by domain user, domain group, or SPN service name to search for.")]
-	    [string]$Type,
+        [string]$Type,
 
-		[Parameter(Mandatory=$True,
+        [Parameter(Mandatory=$True,
         HelpMessage="Define search for user, group, or SPN service name. Wildcards are accepted")]
-	    [string]$Search,
+        [string]$Search,
 
         [Parameter(Mandatory=$false,
         HelpMessage="View minimal information that includes the accounts,affected systems,and registered services.  Nice for getting quick list of DAs.")]
-	    [string]$List
+        [string]$List
     )
 
     Begin
