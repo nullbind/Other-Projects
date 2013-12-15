@@ -59,9 +59,9 @@ function Get-SPN
 	The LDAP skeleton used to create this function was taken from Carlos Perez's "Get-AuditDSDisabledUserAcount" 
 	function found in PoshSec-Mod.	
 
-    TODO
-    - Validate Powershell v3 with $PSVersionTable.psversion.Major
-    - Validate the system is on a domain if no credentials are set with $env:USERDNSDOMAIN
+	.TODO
+	- Validate Powershell v3 with $PSVersionTable.psversion.Major
+	- Validate the system is on a domain if no credentials are set with $env:USERDNSDOMAIN
 
 	#>	
 	
