@@ -39,7 +39,7 @@ function Get-SPN
 	Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 
 	.EXAMPLE	 
-    Get-SPN  -type group -search "Domain Users"
+	Get-SPN  -type group -search "Domain Users"
 	Get-SPN  -type group -search "Domain Admins"
 	Get-SPN  -type group -search "Domain Admins" -List yes
 	Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
