@@ -111,8 +111,7 @@ function Get-SPN
     }
 
     Process
-    {
-	
+    {	
         # Setup LDAP queries
         $CurrentDomain = $ObjDomain.distinguishedName
         $QueryGroup = "(&(objectCategory=user)(memberOf=CN=$Search,CN=Users,$CurrentDomain))"
@@ -207,9 +206,9 @@ function Get-SPN
                     # Add records to data table
                     foreach ($item in $_.properties['ServicePrincipalName'])
                     {
-                        $x =  $item.split("/")[1].split(":")[0]	
-                        $y =  $item.split("/")[0]                                                    
-                        $DataTable.Rows.Add($($_.properties.samaccountname), $x, $y) | Out-Null  
+                        $SpnServer =  $item.split("/")[1].split(":")[0]	
+                        $SpnService =  $item.split("/")[0]                                                    
+                        $DataTable.Rows.Add($($_.properties.samaccountname), $SpnServer, $SpnService) | Out-Null  
                     }
                 }            
                     
