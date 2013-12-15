@@ -23,27 +23,29 @@ function Get-SPN
 	.EXAMPLE	 
 	Get-SPN  -type service -search "*www*"
 	Get-SPN  -type service -search "MSSQLSvc*"
-	Get-SPN  -type service -search "MSSQLSvc*" -List yes
-	Get-SPN  -type service -search "MSSQLSvc*" -List yes | Select Server
-	Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user
-	Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user -List yes
-	Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user -List yes | Select server
+    Get-SPN  -type service -search "MSSQLSvc*" -List yes
+    Get-SPN  -type service -search "MSSQLSvc*" -List yes | Select Server
+    Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user
+    Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user
+    Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 
 	.EXAMPLE	 
+	Get-SPN  -type user -search "serveradmin"
 	Get-SPN  -type user -search "sqladmin"
-	Get-SPN  -type user -search "sqladmin" -List yes
-	Get-SPN  -type user -search "sqladmin" -List yes | Select Server
-	Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user
-	Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user -List yes
-	Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user -List yes | Select server
+    Get-SPN  -type user -search "sqladmin" -List yes
+    Get-SPN  -type user -search "sqladmin" -List yes | Select Server
+    Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user
+    Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user
+    Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 
 	.EXAMPLE	 
+	Get-SPN  -type group -search "Domain Users"
 	Get-SPN  -type group -search "Domain Admins"
-	Get-SPN  -type group -search "Domain Admins" -List yes
-	Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
-	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user 
-	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user -List yes
-	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user2 -List yes | Select server 
+    Get-SPN  -type group -search "Domain Admins" -List yes
+    Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
+    Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user
+    Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user
+    Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 	
 	.LINK
 	http://www.netspi.com
