@@ -171,88 +171,82 @@ function Get-SPN
                 $UserProps.Add('LastModified', [dateTime]"$($_.properties.whenchanged)")
                 $UserProps.Add('PasswordLastSet', [dateTime]::FromFileTime("$($_.properties.pwdlastset)"))                    
                 $UserProps.Add('AccountExpires',( &{$exval = "$($_.properties.accountexpires)"
-                If (($exval -eq 0) -or ($exval -gt [DateTime]::MaxValue.Ticks))
-                {
-                    $AcctExpires = "<Never>"
-                    $AcctExpires
-                }Else{
-                    $Date = [DateTime]$exval
-                    $AcctExpires = $Date.AddYears(1600).ToLocalTime()
-                    $AcctExpires
+                    If (($exval -eq 0) -or ($exval -gt [DateTime]::MaxValue.Ticks))
+                    {
+                        $AcctExpires = "<Never>"
+                        $AcctExpires
+                    }Else{
+                        $Date = [DateTime]$exval
+                        $AcctExpires = $Date.AddYears(1600).ToLocalTime()
+                        $AcctExpires
+                    }
+                }))
+                $UserProps.Add('LastLogon', [dateTime]::FromFileTime("$($_.properties.lastlogon)"))
+                $UserProps.Add('GroupMembership', "$($_.properties.memberof)")
+                $UserProps.Add('SPN Count', "$($_.properties['ServicePrincipalName'].count)")                 
+
+                # Only display line for detailed view
+                If (!$list){
+
+                    # Format array as object and display records
+                    Write-Host " "
+                    [pscustomobject]$UserProps 
                 }
 
-                
-            
-                    }))
-                    $UserProps.Add('LastLogon', [dateTime]::FromFileTime("$($_.properties.lastlogon)"))
-                    $UserProps.Add('GroupMembership', "$($_.properties.memberof)")
-                    $UserProps.Add('SPN Count', "$($_.properties['ServicePrincipalName'].count)")                 
-
+                # Get number of SPNs for accounts, parse them, and add them to the data table
+                $SPN_Count = $_.properties['ServicePrincipalName'].count
+                if ($SPN_Count -gt 0)
+                {
+                        
                     # Only display line for detailed view
                     If (!$list){
-
-                        # Format array as object and display records
-                        Write-Host " "
-                        [pscustomobject]$UserProps 
+                        Write-Output "ServicePrincipalNames (SPN):"
+                            $_.properties['ServicePrincipalName']
                     }
-
-                    # Get number of SPNs for accounts, parse them, and add them to the data table
-                    $SPN_Count = $_.properties['ServicePrincipalName'].count
-                    if ($SPN_Count -gt 0)
-				    {
                         
-                        # Only display line for detailed view
-                        If (!$list){
-					        Write-Output "ServicePrincipalNames (SPN):"
-					        $_.properties['ServicePrincipalName']
-                        }
-                        
-                        # Add records to data table
-                        foreach ($item in $_.properties['ServicePrincipalName'])
-                        {
-                            $x =  $item.split("/")[1].split(":")[0]	
-                            $y =  $item.split("/")[0]  
-                                                                          
-                            $DataTable.Rows.Add($($_.properties.samaccountname), $x, $y) | Out-Null  
-                        }
-
-				    }            
+                    # Add records to data table
+                    foreach ($item in $_.properties['ServicePrincipalName'])
+                    {
+                        $x =  $item.split("/")[1].split(":")[0]	
+                        $y =  $item.split("/")[0]                                                    
+                        $DataTable.Rows.Add($($_.properties.samaccountname), $x, $y) | Out-Null  
+                    }
+                }            
                     
-                    # Only display line for detailed view
-                    If (!$list){
-                        Write-Host " "
-                        Write-Host "-------------------------------------------------------------"
-                    }
+                # Only display line for detailed view
+                If (!$list){
+                    Write-Host " "
+                    Write-Host "-------------------------------------------------------------"
+                }
+            } 
 
-                } 
+            # Only display lines for detailed view
+            If (!$list){
 
-                    # Only display lines for detailed view
-                    If (!$list){
+                # Display number of accounts found
+                Write-Host "Found $RecordCount accounts that matched your search."   
+                Write-Host "-------------------------------------------------------------"
+                Write-Host " "                                    
 
-                        # Display number of accounts found
-			            Write-Host "Found $RecordCount accounts that matched your search."   
-                        Write-Host "-------------------------------------------------------------"
-                        Write-Host " "                                    
+                # Dispaly list view of results
+                $DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
 
-                        # Dispaly list view of results
-                        $DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
+                # Display number of service instances
+                $InstanceCount = $DataTable.rows.count
+                Write-Host "-------------------------------------------------------------"
+                Write-Host "Found $InstanceCount service instances that matched your search."
+                Write-Host "-------------------------------------------------------------"
+            }else{
 
-                        # Display number of service instances
-                        $InstanceCount = $DataTable.rows.count
-			            Write-Host "-------------------------------------------------------------"
-                        Write-Host "Found $InstanceCount service instances that matched your search."
-                        Write-Host "-------------------------------------------------------------"
-                    }else{
-                        
-                        # Dispaly list view of results in sorted order
-                         $DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
-                    }
+                # Dispaly list view of results in sorted order
+                $DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
+            }
         }else{
-            
-			# Display fail
-			Write-Host " " 
-			Write-Host "No records were found that match your search."
-			Write-Host ""
+
+            # Display fail
+            Write-Host " " 
+            Write-Host "No records were found that match your search."
+            Write-Host ""
         }        
     }
 }
