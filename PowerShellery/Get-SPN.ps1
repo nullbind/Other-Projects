@@ -23,11 +23,11 @@ function Get-SPN
 	.EXAMPLE	 
 	Get-SPN  -type service -search "*www*"
 	Get-SPN  -type service -search "MSSQLSvc*"
-    Get-SPN  -type service -search "MSSQLSvc*" -List yes
-    Get-SPN  -type service -search "MSSQLSvc*" -List yes | Select Server
-    Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
+	Get-SPN  -type service -search "MSSQLSvc*" -List yes
+	Get-SPN  -type service -search "MSSQLSvc*" -List yes | Select Server
+	Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 
 	.EXAMPLE	 
 	Get-SPN  -type user -search "serveradmin"
