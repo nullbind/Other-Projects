@@ -191,6 +191,7 @@ function Get-SPN
                     If (!$list){
 
                         # Format array as object and display records
+                        Write-Host " "
                         [pscustomobject]$UserProps 
                     }
 
@@ -218,6 +219,7 @@ function Get-SPN
                     
                     # Only display line for detailed view
                     If (!$list){
+                        Write-Host " "
                         Write-Host "-------------------------------------------------------------"
                     }
 
@@ -256,7 +258,7 @@ function Get-SPN
 
 
 # Default command
-#Get-SPN  -type user -search "sqladmin" -Credential demo\user2 -DomainController 192.168.1.109 
+Get-SPN  -type group -search "Domain Admins" -Credential demo\user2 -DomainController 192.168.1.109 
 
 # Pending Fixes
 # - Fix spaces and tabs
