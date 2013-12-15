@@ -119,7 +119,7 @@ function Get-SPN
         $QueryUser = "(samaccountname=$Search)"
         $QueryService = "(ServicePrincipalName=$Search)"
         
-        # Define the search type and other LDAP query options
+        # Define the search type 
         if(($Type -eq "group") -or ($Type -eq "user") -or ($Type -eq "service")){
 
             # Define query based on type
@@ -132,6 +132,7 @@ function Get-SPN
             }
         }
 		
+        # Define LDAP query options
         $ObjSearcher.PageSize = $Limit
         $ObjSearcher.Filter = $Myfilter
         $ObjSearcher.SearchScope = $SearchScope
@@ -143,7 +144,7 @@ function Get-SPN
 
         # Get a count of the number of accounts that match the LDAP query
         $Records = $ObjSearcher.FindAll()
-		$RecordCount = $Records.count
+        $RecordCount = $Records.count
 
         # Display search results if results exist
         if ($RecordCount -gt 0){
@@ -173,12 +174,14 @@ function Get-SPN
                 If (($exval -eq 0) -or ($exval -gt [DateTime]::MaxValue.Ticks))
                 {
                     $AcctExpires = "<Never>"
+                    $AcctExpires
                 }Else{
                     $Date = [DateTime]$exval
                     $AcctExpires = $Date.AddYears(1600).ToLocalTime()
+                    $AcctExpires
                 }
 
-                $AcctExpires
+                
             
                     }))
                     $UserProps.Add('LastLogon', [dateTime]::FromFileTime("$($_.properties.lastlogon)"))
