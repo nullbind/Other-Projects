@@ -125,11 +125,11 @@ function Get-SPN
             # Define query based on type
             switch ($Type) 
             { 
-			    "group" {$MyFilter = $QueryGroup} 
-			    "user" {$MyFilter = $QueryUser} 
-			    "service" {$MyFilter = $QueryService} 
-			    default {"Invalid query type."}
-		    }
+                "group" {$MyFilter = $QueryGroup} 
+                "user" {$MyFilter = $QueryUser} 
+                "service" {$MyFilter = $QueryService} 
+                default {"Invalid query type."}
+            }
         }
 		
         $ObjSearcher.PageSize = $Limit
