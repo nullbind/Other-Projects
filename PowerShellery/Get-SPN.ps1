@@ -16,7 +16,7 @@ function Get-SPN
 	For example, this script could be used to locate domain systems where SQL Server has been 
 	installed.  It can also be used to help find systems where members of the Domain Admins 
 	group might be logged in if the accounts where used to run services on the domain 
-	(which is very common). So this should be handy for both system administrators and 
+	(which is very common).  So this should be handy for both system administrators and 
 	penetration testers.  The script currently supports trusted connections and provided
 	credentials.
 	
