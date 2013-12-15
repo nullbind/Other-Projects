@@ -32,20 +32,20 @@ function Get-SPN
 	.EXAMPLE	 
 	Get-SPN  -type user -search "serveradmin"
 	Get-SPN  -type user -search "sqladmin"
-    Get-SPN  -type user -search "sqladmin" -List yes
-    Get-SPN  -type user -search "sqladmin" -List yes | Select Server
-    Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
+	Get-SPN  -type user -search "sqladmin" -List yes
+	Get-SPN  -type user -search "sqladmin" -List yes | Select Server
+	Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 
 	.EXAMPLE	 
     Get-SPN  -type group -search "Domain Users"
 	Get-SPN  -type group -search "Domain Admins"
-    Get-SPN  -type group -search "Domain Admins" -List yes
-    Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
-    Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user
-    Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
+	Get-SPN  -type group -search "Domain Admins" -List yes
+	Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
+	Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user
+	Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
 	
 	.LINK
 	http://www.netspi.com
