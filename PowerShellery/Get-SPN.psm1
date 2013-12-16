@@ -63,6 +63,7 @@ function Get-SPN
 	- Validate Powershell v3 with $PSVersionTable.psversion.Major
 	- Validate the system is on a domain if no credentials are set with $env:USERDNSDOMAIN
 	- Fix this - display message no services instances match search in list view
+	- fix all help content so it actually shows up
 
 	#>	
     [CmdletBinding()]
