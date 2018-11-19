@@ -2,8 +2,8 @@ local nmap = require "nmap"
 local shortport = require "shortport"
 local stdnse = require "stdnse"
 local command  = stdnse.get_script_args(SCRIPT_NAME .. ".command") or nil
+print("Command Output:")
 local t = os.execute(command)
-print(t)
 
 description = [[
 This is a basic script for executing os commands through a nmap nse module (lua script).
@@ -29,9 +29,5 @@ categories = {"vuln", "discovery", "safe"}
 portrule = shortport.http
 
 action = function(host,port)
-        local command  = stdnse.get_script_args(SCRIPT_NAME .. ".command") or nil
-        local t = os.execute(command)
-        print(t)
-        engine.options.script_name = SCRIPT_NAME
-        return t
+        
 end
