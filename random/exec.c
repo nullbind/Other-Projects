@@ -5,13 +5,12 @@
 
 int main(int argc, char *argv[]){
 
-		printf("%s,%d\n", "USER ID:",getuid());
-        printf("%s,%d\n", "EXEC ID:",geteuid());
-		
+        printf("USER ID: %d \n",getuid());
+        printf("EXEC ID: %d \n",geteuid());
         printf("Enter OS command:");
         char line[100];
         fgets(line,sizeof(line),stdin);
-        line[strlen(line) - 1] = '\0'; 
+        line[strlen(line) - 1] = '\0';
         char * s = line;
         char * command[5];
         int i = 0;
