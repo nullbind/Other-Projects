@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cytoscape Concentric Distance Layout</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.21.0/cytoscape.min.js"></script>
+    <script src="cytoscape-concentric-distance-layout.js"></script>
+    <style>
+        #cy {
+            width: 800px;
+            height: 600px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div id="cy"></div>
+    <script>
+        var cy = cytoscape({
+            container: document.getElementById('cy'),
+
+            elements: [
+                { data: { id: 'a' } },
+                { data: { id: 'b' } },
+                { data: { id: 'c' } },
+                { data: { id: 'd' } },
+                { data: { id: 'e' } },
+                { data: { id: 'f' } },
+                { data: { id: 'g' } },
+                { data: { id: 'h' } },
+                { data: { id: 'i' } },
+                { data: { id: 'j' } },
+
+                { data: { id: 'ab', source: 'a', target: 'b' } },
+                { data: { id: 'ac', source: 'a', target: 'c' } },
+                { data: { id: 'bd', source: 'b', target: 'd' } },
+                { data: { id: 'be', source: 'b', target: 'e' } },
+                { data: { id: 'cf', source: 'c', target: 'f' } },
+                { data: { id: 'cg', source: 'c', target: 'g' } },
+                { data: { id: 'dh', source: 'd', target: 'h' } },
+                { data: { id: 'ei', source: 'e', target: 'i' } },
+                { data: { id: 'fj', source: 'f', target: 'j' } }
+            ],
+
+            layout: {
+                name: 'concentricDistance',
+                centerNode: 'a', // ID of the central node
+                radiusStep: 100  // Distance between concentric circles
+            },
+
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': '#666',
+                        'label': 'data(id)',
+                        'text-valign': 'center',
+                        'color': '#fff'
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 3,
+                        'line-color': '#ccc',
+                        'target-arrow-color': '#ccc',
+                        'target-arrow-shape': 'triangle'
+                    }
+                }
+            ]
+        });
+
+        // Apply the custom layout
+        cy.layout({
+            name: 'concentricDistance',
+            centerNode: 'a',
+            radiusStep: 100
+        }).run();
+    </script>
+</body>
+</html>
