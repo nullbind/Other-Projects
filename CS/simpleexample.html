@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlastZone Layout Example</title>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <style>
+        #cy {
+            width: 100%;
+            height: 100vh;
+            display: block;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="cy"></div>
+
+    <script>
+        // Custom BlastZone Layout with Circles
+        (function() {
+            'use strict';
+
+            function BlastZoneLayout(options) {
+                this.options = options;
+            }
+
+            BlastZoneLayout.prototype.run = function() {
+                var cy = this.options.cy;
+                var nodes = cy.nodes();
+                var selectedNode = cy.getElementById(this.options.centerNode);
+
+                if (!selectedNode || selectedNode.empty()) {
+                    console.error("Center node not found or not provided.");
+                    return;
+                }
+
+                var BlastZones = {};
+
+                nodes.forEach(function(node) {
+                    var dijkstra = cy.elements().dijkstra(selectedNode, function(edge) {
+                        return 1;
+                    });
+                    var distance = dijkstra.distanceTo(node);
+                    BlastZones[node.id()] = distance;
+                });
+
+                var maxDistance = Math.max(...Object.values(BlastZones));
+
+                var centerX = cy.width() / 2;
+                var centerY = cy.height() / 2;
+
+                var animatePositions = [];
+
+                selectedNode.position({ x: centerX, y: centerY });
+
+                for (var i = 1; i <= maxDistance; i++) {
+                    var nodesAtDistance = nodes.filter(function(node) {
+                        return BlastZones[node.id()] === i;
+                    });
+
+                    var angleStep = (2 * Math.PI) / nodesAtDistance.length;
+                    var radius = i * this.options.radiusStep;
+
+                    nodesAtDistance.forEach(function(node, index) {
+                        var angle = index * angleStep;
+                        var x = centerX + radius * Math.cos(angle);
+                        var y = centerY + radius * Math.sin(angle);
+
+                        animatePositions.push({
+                            node: node,
+                            position: { x: x, y: y }
+                        });
+                    });
+
+                    // Draw a circle around nodes at this distance
+                    drawCircle(cy, centerX, centerY, radius, this.options.circleColors[i - 1]);
+                }
+
+                cy.batch(function() {
+                    animatePositions.forEach(function(anim) {
+                        anim.node.animate({
+                            position: anim.position
+                        }, {
+                            duration: this.options.animationDuration || 500,
+                            easing: this.options.easing || 'ease-out'
+                        });
+                    }.bind(this));
+                }.bind(this));
+
+                cy.fit();
+                cy.emit('layoutready');
+                cy.emit('layoutstop');
+            };
+
+            function drawCircle(cy, centerX, centerY, radius, color) {
+                var circle = cy.add({
+                    group: 'nodes',
+                    data: { id: 'circle' + radius },
+                    position: { x: centerX, y: centerY },
+                    selectable: false,
+                    grabbable: false,
+                    classes: 'blast-zone-circle-' + radius
+                });
+
+                cy.style()
+                    .selector('.blast-zone-circle-' + radius)
+                    .style({
+                        'width': radius * 2,
+                        'height': radius * 2,
+                        'background-color': color,
+                        'opacity': 0.25,
+                        'shape': 'ellipse',
+                        'z-index': 0 // Ensure the circles are behind the nodes
+                    })
+                    .update();
+            }
+
+            cytoscape('layout', 'BlastZone', BlastZoneLayout);
+
+        })();
+
+        // Cytoscape Initialization
+        var cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: [
+                { data: { id: 'a' } },
+                { data: { id: 'b' } },
+                { data: { id: 'c' } },
+                { data: { id: 'd' } },
+                { data: { id: 'e' } },
+                { data: { id: 'f' } },
+                { data: { id: 'g' } },
+                { data: { id: 'h' } },
+                { data: { id: 'i' } },
+                { data: { id: 'j' } },
+                // Add edges to connect the nodes
+                { data: { id: 'ab', source: 'a', target: 'b' } },
+                { data: { id: 'ac', source: 'a', target: 'c' } },
+                { data: { id: 'bd', source: 'b', target: 'd' } },
+                { data: { id: 'be', source: 'b', target: 'e' } },
+                { data: { id: 'cf', source: 'c', target: 'f' } },
+                { data: { id: 'cg', source: 'c', target: 'g' } },
+                { data: { id: 'dh', source: 'd', target: 'h' } },
+                { data: { id: 'ei', source: 'e', target: 'i' } },
+                { data: { id: 'fj', source: 'f', target: 'j' } }
+            ],
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': '#666',
+                        'label': 'data(id)',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'color': '#fff',
+                        'z-index': 10 // Ensure nodes are above the circles
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 2,
+                        'line-color': '#ccc'
+                    }
+                }
+            ],
+            layout: {
+                name: 'BlastZone',
+                centerNode: 'a',
+                radiusStep: 100,
+                animationDuration: 800,
+                circleColors: ['#ff0000', '#00ff00', '#0000ff']  // Red, Green, Blue for distances 1, 2, 3
+            }
+        });
+    </script>
+</body>
+</html>
