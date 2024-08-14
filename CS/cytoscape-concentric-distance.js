@@ -1,68 +1,59 @@
-// author: scott sutherland
-
+// Author Scott Sutherland
+// Custom BlastZone Layout
 (function() {
-  'use strict';
+    'use strict';
 
-  // Define the layout
-  function ConcentricDistanceLayout(options) {
-    this.options = options;
-  }
-
-  // Add the `run` method to the layout prototype
-  ConcentricDistanceLayout.prototype.run = function() {
-    var cy = this.options.cy;
-    var nodes = cy.nodes();
-    var selectedNode = cy.getElementById(this.options.centerNode);
-
-    if (!selectedNode || selectedNode.empty()) {
-      console.error("Center node not found or not provided.");
-      return;
+    function BlastZoneLayout(options) {
+        this.options = options;
     }
 
-    var concentricDistances = {};
+    BlastZoneLayout.prototype.run = function() {
+        var cy = this.options.cy;
+        var nodes = cy.nodes();
+        var selectedNode = cy.getElementById(this.options.centerNode);
 
-    // Calculate distances from the selected node
-    nodes.forEach(function(node) {
-      var dijkstra = cy.elements().dijkstra(selectedNode, function(edge) {
-        return 1; // Treat all edges equally
-      });
-      var distance = dijkstra.distanceTo(node);
-      concentricDistances[node.id()] = distance;
-    });
+        if (!selectedNode || selectedNode.empty()) {
+            console.error("Center node not found or not provided.");
+            return;
+        }
 
-    // Get the maximum distance
-    var maxDistance = Math.max(...Object.values(concentricDistances));
+        var concentricDistances = {};
 
-    // Place the selected node at the center
-    var centerX = cy.width() / 2;
-    var centerY = cy.height() / 2;
-    selectedNode.position({ x: centerX, y: centerY });
+        nodes.forEach(function(node) {
+            var dijkstra = cy.elements().dijkstra(selectedNode, function(edge) {
+                return 1;
+            });
+            var distance = dijkstra.distanceTo(node);
+            concentricDistances[node.id()] = distance;
+        });
 
-    // Arrange other nodes in concentric circles
-    for (var i = 1; i <= maxDistance; i++) {
-      var nodesAtDistance = nodes.filter(function(node) {
-        return concentricDistances[node.id()] === i;
-      });
+        var maxDistance = Math.max(...Object.values(concentricDistances));
 
-      var angleStep = (2 * Math.PI) / nodesAtDistance.length;
-      var radius = i * this.options.radiusStep;
+        var centerX = cy.width() / 2;
+        var centerY = cy.height() / 2;
+        selectedNode.position({ x: centerX, y: centerY });
 
-      nodesAtDistance.forEach(function(node, index) {
-        var angle = index * angleStep;
-        var x = centerX + radius * Math.cos(angle);
-        var y = centerY + radius * Math.sin(angle);
-        node.position({ x: x, y: y });
-      });
-    }
+        for (var i = 1; i <= maxDistance; i++) {
+            var nodesAtDistance = nodes.filter(function(node) {
+                return concentricDistances[node.id()] === i;
+            });
 
-    cy.fit();  // Fit the graph to the viewport
+            var angleStep = (2 * Math.PI) / nodesAtDistance.length;
+            var radius = i * this.options.radiusStep;
 
-    // Trigger the layoutready and layoutstop events
-    cy.emit('layoutready');
-    cy.emit('layoutstop');
-  };
+            nodesAtDistance.forEach(function(node, index) {
+                var angle = index * angleStep;
+                var x = centerX + radius * Math.cos(angle);
+                var y = centerY + radius * Math.sin(angle);
+                node.position({ x: x, y: y });
+            });
+        }
 
-  // Register the layout
-  cytoscape('layout', 'concentricDistance', ConcentricDistanceLayout);
+        cy.fit();
+        cy.emit('layoutready');
+        cy.emit('layoutstop');
+    };
+
+    cytoscape('layout', 'BlastZone', BlastZoneLayout);
 
 })();
