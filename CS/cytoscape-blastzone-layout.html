@@ -1,4 +1,3 @@
-<!-- Author: Scott Sutherland -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,13 +60,17 @@
                         return BlastZones[node.id()] === i;
                     });
 
+                    var innerRadius = (i - 1) * this.options.radiusStep;
+                    var outerRadius = i * this.options.radiusStep;
+
+                    var outerRingStart = innerRadius + (outerRadius - innerRadius) * 0.30;
                     var angleStep = (2 * Math.PI) / nodesAtDistance.length;
-                    var radius = i * this.options.radiusStep;
 
                     nodesAtDistance.forEach(function(node, index) {
-                        var angle = index * angleStep;
-                        var x = centerX + radius * Math.cos(angle);
-                        var y = centerY + radius * Math.sin(angle);
+                        var angle = index * angleStep; // Evenly distribute nodes by angle
+                        var distanceFromCenter = outerRingStart + Math.random() * (outerRadius - outerRingStart);
+                        var x = centerX + distanceFromCenter * Math.cos(angle);
+                        var y = centerY + distanceFromCenter * Math.sin(angle);
 
                         animatePositions.push({
                             node: node,
@@ -76,7 +79,7 @@
                     });
 
                     // Draw a circle around nodes at this distance
-                    drawCircle(cy, centerX, centerY, radius, this.options.circleColors[i - 1]);
+                    drawCircle(cy, centerX, centerY, outerRadius, this.options.circleColors[i - 1]);
                 }
 
                 cy.batch(function() {
